@@ -368,6 +368,17 @@ function Faq() {
               wiki máy, đừng tin “đang ở ROM khác là đủ”.
             </dd>
           </div>
+          <div>
+            <dt className="font-medium">Flash thế nào?</dt>
+            <dd className="mt-1 text-sm text-muted-foreground">
+              Trang{" "}
+              <Link href="/cai-dat" className="text-teal-300 hover:underline">
+                Cài đặt
+              </Link>{" "}
+              có unlock, flash, chuyển từ custom ROM, Magisk/KernelSU. Không giả
+              Play Integrity.
+            </dd>
+          </div>
         </dl>
       </div>
     </section>

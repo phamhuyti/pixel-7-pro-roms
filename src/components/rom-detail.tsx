@@ -8,15 +8,19 @@ import {
   cameraLabels,
   customizationLabels,
   esimLabels,
+  flashMethodLabels,
   googleLabels,
   groupLabels,
   installLabels,
   integrityLabels,
+  relockLabels,
 } from "@/data/labels";
+import { getFlashGuide } from "@/data/flash";
 import type { Rom } from "@/data/types";
 import Link from "next/link";
 
 export function RomDetail({ rom }: { rom: Rom }) {
+  const flashGuide = getFlashGuide(rom.slug);
   const facts = [
     ["Android", rom.versionLabel],
     ["Build", rom.buildLabel],
@@ -48,6 +52,45 @@ export function RomDetail({ rom }: { rom: Rom }) {
       </div>
       <p className="mt-3 text-lg text-muted-foreground">{rom.tagline}</p>
       <p className="mt-4 leading-relaxed">{rom.summary}</p>
+
+      {flashGuide ? (
+        <div className="mt-6 rounded-xl border border-border bg-card p-4">
+          <p className="text-sm font-medium">Hướng dẫn cài</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {flashMethodLabels[flashGuide.method]} ·{" "}
+            {relockLabels[flashGuide.relock]}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button render={<Link href={`/cai-dat/${rom.slug}`} />}>
+              Cách flash
+            </Button>
+            <Button
+              variant="outline"
+              render={<Link href={`/cai-dat/${rom.slug}#tu-custom-rom`} />}
+            >
+              Từ ROM khác
+            </Button>
+            <Button
+              variant="outline"
+              render={<Link href={`/cai-dat/${rom.slug}#root`} />}
+            >
+              Magisk / KernelSU
+            </Button>
+            {!rom.isStock && (
+              <Button
+                variant="outline"
+                render={<Link href="/cai-dat/unlock-bootloader" />}
+              >
+                Unlock bootloader
+              </Button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <p className="mt-6 text-sm text-muted-foreground">
+          ROM này không còn sống trong snapshot — không có hướng dẫn flash.
+        </p>
+      )}
 
       <dl className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {facts.map(([label, value]) => (

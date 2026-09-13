@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { getFlashGuide } from "@/data/flash";
 import { needLabels } from "@/data/labels";
 import type { NeedId } from "@/data/types";
 import { recommendRoms } from "@/lib/recommend";
@@ -135,6 +136,14 @@ export function Wizard({
                       <li key={reason}>{reason}</li>
                     ))}
                   </ul>
+                  {getFlashGuide(pick.rom.slug) && (
+                    <Link
+                      href={`/cai-dat/${pick.rom.slug}`}
+                      className="mt-3 inline-block text-sm text-teal-300 hover:underline"
+                    >
+                      Cách flash
+                    </Link>
+                  )}
                 </li>
               ))}
             </ol>

@@ -14,11 +14,14 @@ export function SiteHeader() {
           </span>
         </Link>
         <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-          <Link href="/#goi-y" className="hover:text-foreground">
+          <Link href="/#goi-y" className="hidden hover:text-foreground sm:inline">
             Gợi ý
           </Link>
           <Link href="/#so-sanh" className="hover:text-foreground">
             So sánh
+          </Link>
+          <Link href="/cai-dat" className="hover:text-foreground">
+            Cài đặt
           </Link>
           <Link href="/#ngung" className="hidden hover:text-foreground sm:inline">
             Đã ngừng

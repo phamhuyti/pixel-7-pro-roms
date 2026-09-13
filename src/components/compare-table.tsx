@@ -20,6 +20,7 @@ import {
   installLabels,
   integrityLabels,
 } from "@/data/labels";
+import { getFlashGuide } from "@/data/flash";
 import type { Rom } from "@/data/types";
 import type { ReactNode } from "react";
 import Link from "next/link";
@@ -43,7 +44,17 @@ const rows: {
   { label: "Camera", render: (rom) => cameraLabels[rom.camera] },
   { label: "eSIM", render: (rom) => esimLabels[rom.esim] },
   { label: "Tùy biến UI", render: (rom) => customizationLabels[rom.customization] },
-  { label: "Cách cài", render: (rom) => installLabels[rom.install] },
+  {
+    label: "Cách cài",
+    render: (rom) =>
+      getFlashGuide(rom.slug) ? (
+        <Link href={`/cai-dat/${rom.slug}`} className="hover:underline">
+          {installLabels[rom.install]}
+        </Link>
+      ) : (
+        installLabels[rom.install]
+      ),
+  },
 ];
 
 export function CompareTable({ roms }: { roms: Rom[] }) {
