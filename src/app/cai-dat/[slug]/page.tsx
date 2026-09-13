@@ -1,10 +1,12 @@
 import { FlashGuideView } from "@/components/flash-guide-view";
 import { flashGuideSlugs, getFlashGuide } from "@/data/flash";
+import { assertLivingGuideCoverage } from "@/data/guide-coverage";
 import { getRom } from "@/data/roms";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
+  assertLivingGuideCoverage();
   return flashGuideSlugs.map((slug) => ({ slug }));
 }
 

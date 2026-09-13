@@ -8,13 +8,36 @@ export function CommandBlock({ commands }: { commands: string[] }) {
   const [copied, setCopied] = useState(false);
   const text = commands.join("\n");
 
+  function fallbackCopy() {
+    const field = document.createElement("textarea");
+    field.value = text;
+    field.setAttribute("readonly", "");
+    field.style.position = "fixed";
+    field.style.left = "-9999px";
+    document.body.appendChild(field);
+    field.select();
+    const ok = document.execCommand("copy");
+    field.remove();
+    if (!ok) throw new Error("copy failed");
+  }
+
   async function copy() {
     try {
-      await navigator.clipboard.writeText(text);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        fallbackCopy();
+      }
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1600);
     } catch {
-      setCopied(false);
+      try {
+        fallbackCopy();
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1600);
+      } catch {
+        setCopied(false);
+      }
     }
   }
 

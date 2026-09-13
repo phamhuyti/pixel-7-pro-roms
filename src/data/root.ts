@@ -58,21 +58,23 @@ const ksuUnsupported = {
   ],
 };
 
-const grapheneCalyxRoot = {
-  support: "unsupported" as const,
-  summary:
-    "Root phá verified boot. ROM này chỉ có ý nghĩa khi khóa bootloader — Magisk/KernelSU đi ngược mục tiêu đó.",
-  warnings: [
-    magiskUnlock,
-    "Giữ Magisk rồi khóa bootloader = brick hoặc bootloop.",
-  ],
-  steps: [
-    {
-      title: "Không root GrapheneOS / CalyxOS",
-      body: "Dự án không hỗ trợ Magisk hay KernelSU. Cần root thì chọn ROM recovery (Lineage, Evo, crDroid, Infinity-X) và để bootloader mở.",
-    },
-  ],
-};
+function lockedRomRoot(name: string) {
+  return {
+    support: "unsupported" as const,
+    summary:
+      "Root phá verified boot. ROM này chỉ có ý nghĩa khi khóa bootloader — Magisk/KernelSU đi ngược mục tiêu đó.",
+    warnings: [
+      magiskUnlock,
+      "Giữ Magisk rồi khóa bootloader = brick hoặc bootloop.",
+    ],
+    steps: [
+      {
+        title: `Không root ${name}`,
+        body: "Dự án không hỗ trợ Magisk hay KernelSU. Cần root thì chọn ROM recovery (Lineage, Evo, crDroid, Infinity-X) và để bootloader mở.",
+      },
+    ],
+  };
+}
 
 export const rootGuides: Record<string, RootGuide> = {
   "stock-pixel": {
@@ -86,7 +88,9 @@ export const rootGuides: Record<string, RootGuide> = {
           title: "Unlock và đúng factory image",
           body: "Máy phải unlocked. Tải factory image cheetah trùng bản vá đang chạy từ developers.google.com/android/images — giải nén đến file init_boot.img.",
         },
-        ...magiskOfficialSteps,
+        magiskOfficialSteps[0],
+        magiskOfficialSteps[2],
+        magiskOfficialSteps[3],
       ],
       after: magiskAfter,
     },
@@ -95,15 +99,15 @@ export const rootGuides: Record<string, RootGuide> = {
   },
 
   grapheneos: {
-    magisk: grapheneCalyxRoot,
-    kernelsu: grapheneCalyxRoot,
+    magisk: lockedRomRoot("GrapheneOS"),
+    kernelsu: lockedRomRoot("GrapheneOS"),
     integrityNote:
       "GrapheneOS dùng sandboxed Play và compatibility mode official — không phải Magisk. Root Graphene làm mất verified boot. Không hướng dẫn giả Integrity.",
   },
 
   calyxos: {
-    magisk: grapheneCalyxRoot,
-    kernelsu: grapheneCalyxRoot,
+    magisk: lockedRomRoot("CalyxOS"),
+    kernelsu: lockedRomRoot("CalyxOS"),
     integrityNote:
       "CalyxOS dùng microG, Integrity vốn yếu. Root rồi khóa bootloader không phải mô hình dự án. Không hướng dẫn giả Integrity.",
   },
@@ -176,18 +180,21 @@ export const rootGuides: Record<string, RootGuide> = {
       warnings: [magiskUnlock, magiskNeverShare, integrityNote],
       steps: [
         {
-          title: "Cách trang crDroid: sideload APK-zip",
-          body: "Sau khi sideload ROM và (nếu có) GApps, recovery hỏi đổi slot. Yes, rồi sideload Magisk. Đổi đuôi APK thành zip.",
-          commands: [
-            "adb sideload Magisk-vXX.X.apk.zip",
-          ],
+          title: "Cách trang crDroid: sideload zip",
+          body: "Sau khi sideload ROM và (nếu có) GApps, recovery hỏi đổi slot. Yes, rồi sideload Magisk. Đổi đuôi .apk thành .zip (Magisk-v24.0.apk → Magisk-v24.0.zip).",
+          commands: ["adb sideload Magisk-vXX.X.zip"],
           note: "Magisk docs đánh dấu custom recovery là deprecated. Nếu sideload lỗi, dùng init_boot bên dưới.",
+        },
+        {
+          title: "Cài app Magisk official",
+          body: "Tải APK từ GitHub topjohnwu/Magisk Releases nếu chưa có trên máy.",
         },
         {
           title: "Cách Magisk official: init_boot",
           body: "Lấy init_boot từ zip crDroid đang chạy hoặc factory image cùng vá, patch trong app, flash init_boot.",
         },
-        ...magiskOfficialSteps.slice(2),
+        magiskOfficialSteps[2],
+        magiskOfficialSteps[3],
       ],
       after: magiskAfter,
     },
@@ -228,7 +235,9 @@ export const rootGuides: Record<string, RootGuide> = {
           title: "Lấy init_boot từ factory image",
           body: "Guide Infinity-X: giải nén factory image Google, copy init_boot.img vào máy. Nên trùng tháng vá với ROM đang chạy.",
         },
-        ...magiskOfficialSteps,
+        magiskOfficialSteps[0],
+        magiskOfficialSteps[2],
+        magiskOfficialSteps[3],
       ],
       after: magiskAfter,
     },

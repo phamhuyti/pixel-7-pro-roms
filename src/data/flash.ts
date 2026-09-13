@@ -146,7 +146,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       {
         title: "Boot lần đầu",
         body: "Chọn Start. Setup: nên để tắt OEM unlocking ở màn cuối. Có thể đối chiếu hash verified boot trên màn hình vàng lúc boot.",
-        note: "Pixel 7 Pro: bc1c0dd95664604382bb888412026422742eb333071ea0b2d19036217d49182f",
+        note: "Hash snapshot Pixel 7 Pro: bc1c0dd95664604382bb888412026422742eb333071ea0b2d19036217d49182f. Đối chiếu grapheneos.org/install hôm cài — hash đổi theo bản.",
       },
     ],
     afterInstall: [

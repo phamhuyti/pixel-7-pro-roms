@@ -64,6 +64,18 @@ export function RomDetail({ rom }: { rom: Rom }) {
             <Button render={<Link href={`/cai-dat/${rom.slug}`} />}>
               Cách flash
             </Button>
+            <Button
+              variant="outline"
+              render={<Link href={`/cai-dat/${rom.slug}#tu-custom-rom`} />}
+            >
+              Từ ROM khác
+            </Button>
+            <Button
+              variant="outline"
+              render={<Link href={`/cai-dat/${rom.slug}#root`} />}
+            >
+              Magisk / KernelSU
+            </Button>
             {!rom.isStock && (
               <Button
                 variant="outline"
