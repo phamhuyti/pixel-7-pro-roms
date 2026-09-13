@@ -6,11 +6,10 @@ Stock Pixel OS được đưa vào như **mốc so sánh**: máy vẫn nhận c�
 
 ## Không làm gì
 
-- Không hướng dẫn flash từng lệnh
 - Không catalog bản Telegram unofficial
-- Không hướng dẫn bypass Play Integrity / root
+- Không hướng dẫn bypass Play Integrity / root / Magisk
 
-Cài ROM: đọc wiki hoặc installer **official** của dự án đó. Mở bootloader xóa dữ liệu.
+Cài ROM: trang [`/cai-dat`](src/app/cai-dat/page.tsx) tóm bước official (unlock + từng ROM còn sống). Wiki dự án thắng nếu lệch. Mở bootloader xóa dữ liệu.
 
 ## Chạy local
 
@@ -39,6 +38,8 @@ Mở [http://127.0.0.1:43123](http://127.0.0.1:43123). Image production dùng `o
 ## Dữ liệu
 
 - [`src/data/roms.ts`](src/data/roms.ts) — catalog ROM (stock, đang duy trì, cũ, đã ngừng)
+- [`src/data/flash.ts`](src/data/flash.ts) — hướng dẫn flash ROM còn sống
+- [`src/data/unlock.ts`](src/data/unlock.ts) — mở khóa bootloader
 - [`src/data/sources.ts`](src/data/sources.ts) — URL official
 - [`src/data/labels.ts`](src/data/labels.ts) — ngày snapshot và nhãn tiếng Việt
 

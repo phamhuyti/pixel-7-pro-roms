@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     default: `Custom ROM ${DEVICE_NAME}`,
     template: `%s · Cheetah ROMs`,
   },
-  description: `So sánh custom ROM còn duy trì cho ${DEVICE_NAME} (cheetah). Snapshot ${SNAPSHOT_LABEL}. Không hướng dẫn flash.`,
+  description: `So sánh và hướng dẫn cài custom ROM còn duy trì cho ${DEVICE_NAME} (cheetah). Snapshot ${SNAPSHOT_LABEL}. Không hướng dẫn root hay bypass Integrity.`,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

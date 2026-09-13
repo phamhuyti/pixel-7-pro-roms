@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   DEVICE_CODENAME,
   DEVICE_NAME,
@@ -5,6 +6,7 @@ import {
   STOCK_SUPPORT_END,
 } from "@/data/labels";
 import { liveRoms, staleRoms } from "@/data/roms";
+import Link from "next/link";
 
 export function Hero() {
   const activeCount = liveRoms.filter((rom) => !rom.isStock).length;
@@ -28,6 +30,9 @@ export function Hero() {
             ROM official/community còn kiểm chứng được — và chỉ rõ ROM đã chết
             để bạn không flash nhầm.
           </p>
+          <Button render={<Link href="/cai-dat" />}>
+            Unlock và flash ROM còn sống
+          </Button>
         </div>
         <dl className="grid grid-cols-3 gap-3 sm:gap-4">
           <Stat value={String(activeCount)} label="ROM còn sống" />

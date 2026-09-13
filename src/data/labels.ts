@@ -4,10 +4,12 @@ import type {
   CameraSupport,
   Customization,
   EsimSupport,
+  FlashMethod,
   GoogleStack,
   InstallEase,
   Integrity,
   NeedId,
+  RelockAdvice,
   RomGroup,
   RomStatus,
 } from "./types";
@@ -74,6 +76,21 @@ export const installLabels: Record<InstallEase, string> = {
   stock: "Cài sẵn / OTA Google",
   "web-flasher": "Web / device flasher",
   recovery: "Recovery + sideload",
+};
+
+export const flashMethodLabels: Record<FlashMethod, string> = {
+  "stock-web": "Android Flash Tool",
+  "web-installer": "Web installer",
+  "device-flasher": "Device flasher",
+  "recovery-sideload": "Recovery + sideload",
+  "desktop-installer": "Installer trên máy tính",
+};
+
+export const relockLabels: Record<RelockAdvice, string> = {
+  required: "Phải khóa lại bootloader",
+  recommended: "Nên khóa lại sau khi flash",
+  forbidden: "Không được khóa lại",
+  "n/a": "Không áp dụng",
 };
 
 export const esimLabels: Record<EsimSupport, string> = {

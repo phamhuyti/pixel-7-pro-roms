@@ -39,6 +39,55 @@ export type RomLink = {
   href: string;
 };
 
+export type FlashMethod =
+  | "stock-web"
+  | "web-installer"
+  | "device-flasher"
+  | "recovery-sideload"
+  | "desktop-installer";
+
+export type RelockAdvice = "required" | "recommended" | "forbidden" | "n/a";
+
+export type FlashStep = {
+  title: string;
+  body: string;
+  commands?: string[];
+  note?: string;
+};
+
+export type FlashDownload = {
+  label: string;
+  href: string;
+  detail?: string;
+};
+
+export type FlashGuide = {
+  method: FlashMethod;
+  officialHref: string;
+  officialLabel: string;
+  extraLinks?: RomLink[];
+  summary: string;
+  relock: RelockAdvice;
+  firmwareNote?: string;
+  requirements: string[];
+  warnings: string[];
+  downloads: FlashDownload[];
+  steps: FlashStep[];
+  afterInstall: string[];
+};
+
+export type UnlockGuide = {
+  summary: string;
+  officialHref: string;
+  officialLabel: string;
+  extraLinks?: RomLink[];
+  warnings: string[];
+  requirements: string[];
+  steps: FlashStep[];
+  afterUnlock: string[];
+  cannotUnlock: string[];
+};
+
 export type Rom = {
   slug: string;
   name: string;

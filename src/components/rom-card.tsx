@@ -9,6 +9,7 @@ import {
   googleLabels,
   groupLabels,
 } from "@/data/labels";
+import { getFlashGuide } from "@/data/flash";
 import type { Rom } from "@/data/types";
 import Link from "next/link";
 
@@ -56,10 +57,19 @@ export function RomCard({
       <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
         {rom.summary}
       </p>
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         <Button size="sm" render={<Link href={`/roms/${rom.slug}`} />}>
           Chi tiết
         </Button>
+        {getFlashGuide(rom.slug) && (
+          <Button
+            size="sm"
+            variant="outline"
+            render={<Link href={`/cai-dat/${rom.slug}`} />}
+          >
+            Cách flash
+          </Button>
+        )}
       </div>
     </article>
   );

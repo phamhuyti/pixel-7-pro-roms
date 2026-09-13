@@ -14,7 +14,12 @@ export default function NotFound() {
         Catalog chỉ gồm ROM có slug trong dữ liệu snapshot. Telegram unofficial
         không được liệt kê.
       </p>
-      <Button render={<Link href="/" />}>Về trang so sánh</Button>
+      <div className="flex flex-wrap gap-2">
+        <Button render={<Link href="/" />}>Về trang so sánh</Button>
+        <Button variant="outline" render={<Link href="/cai-dat" />}>
+          Cài đặt
+        </Button>
+      </div>
     </div>
   );
 }
