@@ -1,7 +1,11 @@
 import { FlashSteps } from "@/components/flash-steps";
 import { BulletList, GuideChrome, GuideSection } from "@/components/guide-chrome";
+import { RootGuideSections } from "@/components/root-guide-view";
+import { SwitchGuideSections } from "@/components/switch-guide-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getRootGuide } from "@/data/root";
+import { getSwitchGuide } from "@/data/switch-rom";
 import { flashMethodLabels, relockLabels } from "@/data/labels";
 import type { FlashGuide } from "@/data/types";
 import type { Rom } from "@/data/types";
@@ -14,6 +18,8 @@ export function FlashGuideView({
   rom: Rom;
   guide: FlashGuide;
 }) {
+  const switchGuide = getSwitchGuide(rom.slug);
+  const rootGuide = getRootGuide(rom.slug);
   return (
     <GuideChrome
       eyebrow={rom.shortName}
@@ -34,6 +40,16 @@ export function FlashGuideView({
           <Button variant="ghost" render={<Link href={`/roms/${rom.slug}`} />}>
             Chi tiết ROM
           </Button>
+          {switchGuide && (
+            <Button variant="ghost" render={<Link href="#tu-custom-rom" />}>
+              Từ ROM khác
+            </Button>
+          )}
+          {rootGuide && (
+            <Button variant="ghost" render={<Link href="#root" />}>
+              Magisk / KernelSU
+            </Button>
+          )}
         </>
       }
     >
@@ -104,6 +120,9 @@ export function FlashGuideView({
       <GuideSection title="Sau khi cài">
         <BulletList items={guide.afterInstall} muted />
       </GuideSection>
+
+      {switchGuide && <SwitchGuideSections guide={switchGuide} />}
+      {rootGuide && <RootGuideSections guide={rootGuide} />}
     </GuideChrome>
   );
 }

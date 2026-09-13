@@ -12,6 +12,7 @@ import type {
   RelockAdvice,
   RomGroup,
   RomStatus,
+  RootSupport,
 } from "./types";
 
 export const SNAPSHOT_DATE = "2026-09-13";
@@ -91,6 +92,12 @@ export const relockLabels: Record<RelockAdvice, string> = {
   recommended: "Nên khóa lại sau khi flash",
   forbidden: "Không được khóa lại",
   "n/a": "Không áp dụng",
+};
+
+export const rootSupportLabels: Record<RootSupport, string> = {
+  "official-optional": "Tùy chọn trên trang ROM",
+  unofficial: "Không official — init_boot",
+  unsupported: "Không hỗ trợ",
 };
 
 export const esimLabels: Record<EsimSupport, string> = {

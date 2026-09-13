@@ -12,8 +12,9 @@ export function Disclaimer() {
         <AlertDescription>
           Mở bootloader xóa máy, ảnh hưởng bảo hành và làm yếu verified boot.
           Play Integrity / ngân hàng / Wallet trên custom ROM đều kém stock.
-          Không catalog bản Telegram unofficial, không hướng dẫn bypass
-          Integrity hay root. Stock vẫn vá đến {STOCK_SUPPORT_END}. Có trang{" "}
+          Không catalog bản Telegram unofficial, không hướng dẫn giả Play
+          Integrity. Magisk/KernelSU nằm trong Cài đặt. Stock vẫn vá đến{" "}
+          {STOCK_SUPPORT_END}. Có trang{" "}
           <Link href="/cai-dat" className="text-foreground underline-offset-2 hover:underline">
             Cài đặt
           </Link>{" "}

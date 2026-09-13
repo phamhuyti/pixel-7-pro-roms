@@ -24,9 +24,9 @@ export function InstallHub() {
         Mở bootloader và flash ROM còn sống
       </h1>
       <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
-        Unlock một lần, rồi flash theo kênh official của từng ROM. Không có
-        hướng dẫn root, Magisk, hay bypass Play Integrity. ROM stale / đã ngừng
-        không được viết bước flash.
+        Unlock một lần, rồi flash theo kênh official. Có mục chuyển từ custom
+        ROM khác, Magisk (init_boot) và KernelSU khi kernel ROM hỗ trợ. Không
+        hướng dẫn giả Play Integrity. ROM stale / đã ngừng không có bước flash.
       </p>
 
       <Alert className="mt-8 border-amber-500/30 bg-amber-500/8">
@@ -58,6 +58,41 @@ export function InstallHub() {
           <Button className="mt-4" render={<Link href="/cai-dat/unlock-bootloader" />}>
             Xem hướng dẫn unlock
           </Button>
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="font-heading text-2xl font-semibold tracking-tight">
+          Đang ở ROM khác, hoặc cần root
+        </h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h3 className="font-heading text-lg font-semibold">
+              Flash từ custom ROM
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Dirty flash cùng ROM, clean flash khi đổi ROM. Graphene/Calyx về
+              stock trước.
+            </p>
+            <Button
+              className="mt-4"
+              render={<Link href="/cai-dat/tu-custom-rom" />}
+            >
+              Xem quy tắc chuyển ROM
+            </Button>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h3 className="font-heading text-lg font-semibold">
+              Magisk và KernelSU
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Patch init_boot trên Tensor. KernelSU chỉ khi kernel ROM có sẵn.
+              Không có keybox / giả Integrity.
+            </p>
+            <Button className="mt-4" render={<Link href="/cai-dat/root" />}>
+              Root theo từng ROM
+            </Button>
+          </div>
         </div>
       </section>
 

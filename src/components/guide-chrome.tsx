@@ -48,7 +48,13 @@ export function GuideChrome({
       <div className="mt-5 flex flex-wrap gap-2">
         <Button
           variant="outline"
-          render={<a href={officialHref} target="_blank" rel="noreferrer" />}
+          render={
+            officialHref.startsWith("/") ? (
+              <Link href={officialHref} />
+            ) : (
+              <a href={officialHref} target="_blank" rel="noreferrer" />
+            )
+          }
         >
           {officialLabel}
         </Button>

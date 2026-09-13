@@ -76,6 +76,31 @@ export type FlashGuide = {
   afterInstall: string[];
 };
 
+export type RootSupport = "official-optional" | "unofficial" | "unsupported";
+
+export type RootMethodGuide = {
+  support: RootSupport;
+  summary: string;
+  warnings: string[];
+  steps: FlashStep[];
+  after?: string[];
+};
+
+export type RootGuide = {
+  magisk: RootMethodGuide;
+  kernelsu: RootMethodGuide;
+  integrityNote: string;
+};
+
+export type SwitchGuide = {
+  summary: string;
+  stockFirst: boolean;
+  dirtyAllowed: boolean;
+  cleanRequired: boolean;
+  steps: FlashStep[];
+  notes: string[];
+};
+
 export type UnlockGuide = {
   summary: string;
   officialHref: string;

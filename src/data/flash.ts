@@ -7,8 +7,8 @@ const sharedWipe = "Unlock và flash factory/sideload lần đầu xóa dữ li�
 const sharedCable =
   "Dùng cáp data, cổng USB thẳng. Nhiều lỗi fastboot là cáp hoặc hub, không phải ROM.";
 
-const noRoot =
-  "Trang này không hướng dẫn Magisk, KernelSU, hay bypass Play Integrity. Nếu trang official có mục root, đó là tùy chọn ngoài phạm vi catalog này.";
+const rootPointer =
+  "Magisk / KernelSU: xem mục Root trên trang này. Không có hướng dẫn giả Play Integrity.";
 
 const noRelockFeature =
   "Không chạy `fastboot flashing lock` khi đang ở ROM này — brick. Chỉ khóa lại sau khi flash stock, GrapheneOS, hoặc CalyxOS.";
@@ -36,7 +36,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       sharedWipe,
       "Khóa bootloader chỉ sau khi flash xong stock (hoặc Graphene/Calyx). Khóa khi còn ROM khác = brick.",
       "Nếu đang ở GrapheneOS, xóa AVB custom key trước khi flash stock rồi mới khóa.",
-      noRoot,
+      rootPointer,
     ],
     downloads: [
       {
@@ -108,7 +108,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       "Chỉ cài từ grapheneos.org. Không dùng bản Telegram “Graphene mod”.",
       "Máy nhà mạng có thể không unlock được.",
       sharedCable,
-      noRoot,
+      rootPointer,
     ],
     downloads: [
       {
@@ -181,7 +181,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       "Flash nhầm factory image máy khác sẽ brick.",
       "Từ ROM khác → stock trước khi mong khóa bootloader (issue tracker Google).",
       sharedCable,
-      noRoot,
+      rootPointer,
     ],
     downloads: [
       {
@@ -260,7 +260,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       noRelockFeature,
       "Flash recovery lạ thay vendor_boot Lineage thường làm sideload hỏng.",
       "GApps (nếu dùng) phải sideload trước lần boot hệ thống đầu tiên.",
-      noRoot,
+      rootPointer,
     ],
     downloads: [
       {
@@ -342,7 +342,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       noRelockFeature,
       "Wiki Evolution X: DO NOT RELOCK YOUR BOOTLOADER khi đang ở Evo X.",
       "Chọn đúng gói GApps hoặc vanilla. Bản Android 15 còn trên trang — không flash nhầm.",
-      noRoot,
+      rootPointer,
     ],
     downloads: [
       {
@@ -408,7 +408,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       noRelockFeature,
       "Làm đúng thứ tự official: sideload ROM trước, factory reset sau — khác Lineage.",
       "Đừng tiếp tục nếu một lệnh fail.",
-      noRoot,
+      rootPointer,
     ],
     downloads: [
       {
@@ -479,7 +479,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       sharedWipe,
       noRelockFeature,
       "Chỉ file từ official_devices hoặc SourceForge Infinity-X, không reupload.",
-      noRoot,
+      rootPointer,
     ],
     downloads: [
       {
@@ -549,7 +549,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       noRelockFeature,
       "Không flash file gắn UNOFFICIAL từ mirror nếu bạn muốn kênh iodé.",
       "Kẹt “waiting for any device” ở fastbootd: đổi sang cáp USB-A ↔ USB-C, cổng khác.",
-      noRoot,
+      rootPointer,
     ],
     downloads: [
       {
@@ -606,7 +606,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       noRelockFeature,
       "Doc /e/ từng lệch version so với máy thực — luôn đọc trang thiết bị hôm bạn cài.",
       "Flash script máy khác (panther) lên cheetah sẽ hỏng máy.",
-      noRoot,
+      rootPointer,
     ],
     downloads: [
       {

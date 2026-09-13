@@ -37,4 +37,8 @@ export const sources = {
   infinityDownloads: "https://projectinfinity-x.com/downloads/cheetah",
   iodeInstall: "https://iode.tech/installation/",
   pixelBootloaderIssue: "https://issuetracker.google.com/issues/387030988",
+  magiskInstall: "https://topjohnwu.github.io/Magisk/install.html",
+  magiskReleases: "https://github.com/topjohnwu/Magisk/releases",
+  kernelsuInstall: "https://kernelsu.org/guide/installation.html",
+  kernelsuReleases: "https://github.com/tiann/KernelSU/releases",
 } as const;

@@ -375,8 +375,8 @@ function Faq() {
               <Link href="/cai-dat" className="text-teal-300 hover:underline">
                 Cài đặt
               </Link>{" "}
-              có unlock bootloader và bước official cho từng ROM còn sống. Không
-              có root / bypass Integrity.
+              có unlock, flash, chuyển từ custom ROM, Magisk/KernelSU. Không giả
+              Play Integrity.
             </dd>
           </div>
         </dl>
