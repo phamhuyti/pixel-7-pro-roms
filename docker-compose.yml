@@ -1,0 +1,15 @@
+services:
+  pixel-7-pro-roms:
+    image: pixel-7-pro-roms:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pixel-7-pro-roms
+    restart: unless-stopped
+    ports:
+      - "43123:43123"
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - NODE_ENV=production
+      - PORT=43123
+      - HOSTNAME=0.0.0.0

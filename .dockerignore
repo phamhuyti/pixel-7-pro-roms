@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+.DS_Store
+.env*
+npm-debug.log*
+.vercel
+coverage
+.idea
+.vscode
+AGENTS.md
+CLAUDE.md
