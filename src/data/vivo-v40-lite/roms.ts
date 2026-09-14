@@ -58,7 +58,7 @@ export const roms: Rom[] = [
       { label: "Trang sản phẩm VN", href: sources.productVn },
       { label: "Thông số VN", href: sources.productParamsVn },
       { label: "Cập nhật hệ thống (vivo VN)", href: sources.systemUpdateVn },
-      { label: "Hướng dẫn Local upgrade (vivo)", href: sources.localUpgradeGuide },
+      { label: "Hướng dẫn firmware (vivo VN)", href: sources.localUpgradeGuide },
     ],
   },
 ];

@@ -9,11 +9,11 @@ const noCustom =
 
 export const flashGuides: Record<string, FlashGuide> = {
   "stock-vivo": {
-    method: "desktop-installer",
+    method: "ota-local",
     officialHref: sources.systemUpdateVn,
     officialLabel: "vivo VN — Cập nhật hệ thống",
     extraLinks: [
-      { label: "Local upgrade (hướng dẫn hãng)", href: sources.localUpgradeGuide },
+      { label: "Hướng dẫn firmware / Local upgrade (VN)", href: sources.localUpgradeGuide },
       { label: "Trang sản phẩm V40 Lite VN", href: sources.productVn },
     ],
     summary:
@@ -40,9 +40,9 @@ export const flashGuides: Record<string, FlashGuide> = {
         detail: "Chọn đúng mẫu nếu trang liệt kê; không thấy thì dùng OTA trên máy.",
       },
       {
-        label: "Tutorial Local upgrade",
+        label: "Hướng dẫn cài firmware (vivo VN)",
         href: sources.localUpgradeGuide,
-        detail: "Đặt gói ở thư mục gốc bộ nhớ trong, không giải nén — làm theo trang hãng.",
+        detail: "Đặt gói ở thư mục gốc bộ nhớ trong, không giải nén — làm theo trang VN.",
       },
     ],
     steps: [

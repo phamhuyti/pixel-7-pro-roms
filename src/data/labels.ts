@@ -84,6 +84,7 @@ export const flashMethodLabels: Record<FlashMethod, string> = {
   "device-flasher": "Device flasher",
   "recovery-sideload": "Recovery + sideload",
   "desktop-installer": "Installer trên máy tính",
+  "ota-local": "OTA / Local upgrade",
 };
 
 export const relockLabels: Record<RelockAdvice, string> = {

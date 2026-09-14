@@ -51,7 +51,8 @@ export type FlashMethod =
   | "web-installer"
   | "device-flasher"
   | "recovery-sideload"
-  | "desktop-installer";
+  | "desktop-installer"
+  | "ota-local";
 
 export type RelockAdvice = "required" | "recommended" | "forbidden" | "n/a";
 
