@@ -243,44 +243,64 @@ export const flashGuides: Record<string, FlashGuide> = {
       { label: "Tải nightly + recovery", href: sources.lineageDownloads },
       { label: "Cập nhật firmware", href: sources.lineageFirmware },
       { label: "GApps (MindTheGapps arm64)", href: sources.lineageGapps },
+      { label: "Auto-flash script (repo)", href: sources.lineageAutoFlash },
     ],
     summary:
-      "Recovery Lineage + sideload zip. Bắt buộc firmware stock Android 16 mới nhất trước khi flash. Không khóa bootloader.",
+      "Có script auto-flash (tải nightly official + fastboot/adb theo wiki). Hoặc làm tay: recovery Lineage + sideload. Bắt buộc firmware stock Android 16 mới nhất. Không khóa bootloader.",
     relock: "forbidden",
     firmwareNote:
-      "Wiki: cần stock Android 16, bản vá mới nhất. Đang ở custom ROM khác (kể cả Lineage unofficial) không có nghĩa firmware đã đủ. Không chắc thì flash stock trước.",
+      "Wiki: cần stock Android 16, bản vá mới nhất. Đang ở custom ROM khác (kể cả Lineage unofficial) không có nghĩa firmware đã đủ. Không chắc thì flash stock trước. Script không flash stock giúp bạn.",
     requirements: [
       "Bootloader đã unlock (xem trang Mở khóa bootloader).",
       "USB debugging bật lại sau unlock (máy bị wipe).",
       "Đã boot stock ít nhất một lần; kiểm tra gọi/SMS/LTE nếu bạn cần chúng trên Lineage.",
-      "Tải từ download.lineageos.org/devices/cheetah: boot.img, dtbo.img, vendor_kernel_boot.img, vendor_boot.img, zip ROM.",
+      "platform-tools (adb, fastboot), python3, curl|wget — cho script auto-flash.",
+      "Hoặc tải tay từ download.lineageos.org/devices/cheetah: boot.img, dtbo.img, vendor_kernel_boot.img, vendor_boot.img, zip ROM.",
     ],
     warnings: [
       sharedWipe,
       noRelockFeature,
+      "Script chỉ chấp nhận product=cheetah và bootloader unlocked — đừng sửa để ép máy khác.",
       "Flash recovery lạ thay vendor_boot Lineage thường làm sideload hỏng.",
       "GApps (nếu dùng) phải sideload trước lần boot hệ thống đầu tiên.",
       rootPointer,
     ],
     downloads: [
       {
+        label: "Auto-flash script (cheetah)",
+        href: "/tools/lineageos-cheetah-flash.sh",
+        detail:
+          "Tải nightly từ API official, đối chiếu SHA256, flash boot/dtbo/vendor_kernel_boot/vendor_boot, sideload zip. Format data / Apply from ADB vẫn chọn tay trên recovery.",
+      },
+      {
         label: "Wiki cài đặt",
         href: sources.lineageInstall,
-        detail: "Nguồn bước chính thức — đọc một lượt trước khi flash.",
+        detail: "Nguồn bước chính thức — đọc một lượt trước khi flash (wiki thắng nếu lệch).",
       },
       {
         label: "Tải cheetah",
         href: sources.lineageDownloads,
-        detail: "Bỏ qua file không được wiki nêu.",
+        detail: "Bỏ qua file không được wiki nêu (init_boot, vbmeta, …).",
       },
     ],
     steps: [
       {
         title: "Đúng firmware stock Android 16",
-        body: "Nếu không chắc, flash stock bằng Android Flash Tool rồi mới tiếp. Wiki không hướng dẫn up/downgrade tại chỗ.",
+        body: "Nếu không chắc, flash stock bằng Android Flash Tool rồi mới tiếp. Wiki không hướng dẫn up/downgrade tại chỗ. Script auto-flash giả định firmware đã đúng.",
       },
       {
-        title: "Flash phân vùng phụ",
+        title: "Cách nhanh: chạy auto-flash script",
+        body: "Trên Linux / macOS / WSL: tải script ở mục “Tải official” phía trên (hoặc file tools/ trong repo), chmod +x, cắm máy đã unlock. Script tải nightly cheetah mới nhất (hoặc dùng --skip-download / --rom), kiểm tra product=cheetah, flash image, rồi nhắc bạn Format data và Apply from ADB trên recovery.",
+        commands: [
+          "chmod +x lineageos-cheetah-flash.sh",
+          "./lineageos-cheetah-flash.sh",
+          "./lineageos-cheetah-flash.sh --gapps MindTheGapps-arm64-*.zip",
+          "./lineageos-cheetah-flash.sh --download-only",
+        ],
+        note: "Không dùng --yes trừ khi bạn chấp nhận wipe không hỏi lại. Wiki Lineage thắng nếu lệnh script lệch wiki.",
+      },
+      {
+        title: "Hoặc flash tay — phân vùng phụ",
         body: "Tải boot.img, dtbo.img, vendor_kernel_boot.img từ trang download. Vào Fastboot rồi flash đúng tên file bạn vừa tải.",
         commands: [
           "fastboot flash boot boot.img",
@@ -306,7 +326,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       },
       {
         title: "GApps tùy chọn (trước boot đầu)",
-        body: "Nếu muốn Google: recovery hỏi reboot recovery để cài add-on → Yes. Sideload MindTheGapps kiến trúc arm64. Chữ Signature verification failed với GApps là bình thường — chọn Yes.",
+        body: "Nếu muốn Google: recovery hỏi reboot recovery để cài add-on → Yes. Sideload MindTheGapps kiến trúc arm64. Chữ Signature verification failed với GApps là bình thường — chọn Yes. Script: thêm --gapps đường-dẫn-zip.",
         commands: ["adb -d sideload MindTheGapps-*.zip"],
       },
       {

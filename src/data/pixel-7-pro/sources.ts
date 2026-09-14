@@ -26,6 +26,7 @@ export const sources = {
   googleUsbDriver: "https://developer.android.com/studio/run/win-usb",
   lineageGapps: "https://wiki.lineageos.org/gapps/",
   lineageFirmware: "https://wiki.lineageos.org/devices/cheetah/fw_update/",
+  lineageAutoFlash: "/tools/lineageos-cheetah-flash.sh",
   grapheneWeb: "https://grapheneos.org/install/web",
   grapheneCli: "https://grapheneos.org/install/cli",
   calyxWindows: "https://calyxos.org/install/devices/cheetah/windows/",
