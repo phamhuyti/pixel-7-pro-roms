@@ -21,7 +21,7 @@ Cài ROM: `/{máy}/cai-dat` — unlock, flash, chuyển từ custom ROM, Magisk/
 | Máy | Ghi chú snapshot 14/09/2026 |
 | --- | --- |
 | Pixel 7 Pro | Stock còn vá đến 10/2027. Graphene/Calyx/Lineage và fork A16 còn kiểm chứng. Unlock official `fastboot flashing unlock`. Magisk: `init_boot`. |
-| LG V50 ThinQ | Stock hết vá (A12). LineageOS 21 từng official, wiki ghi *no longer maintained*. Không OEM unlock. Magisk: `boot.img`. Dual Screen không chạy trên Lineage. |
+| LG V50 ThinQ | Stock hết vá (A12). LineageOS 21 từng official, wiki ghi *no longer maintained*. Không OEM unlock. Magisk: `boot.img`. Dual Screen không chạy trên Lineage. Có kho Synology công cụ unlock + zip unofficial đã lưu. |
 
 ## Chạy local
 

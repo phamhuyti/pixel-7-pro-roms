@@ -21,4 +21,5 @@ export const sources = {
   evoGsiXda:
     "https://xdaforums.com/t/rom-android-14-gsi-evolution-x-8-0-3-v2023-12-01-un-official-flashlmdd.4652374/",
   gapps: "https://wiki.lineageos.org/gapps/",
+  v50ArchiveShare: "https://huypnc.synology.me:5001/sharing/i4cYWeFnN",
 } as const;
