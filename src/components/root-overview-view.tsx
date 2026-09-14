@@ -1,29 +1,33 @@
 import { GuideChrome, GuideSection } from "@/components/guide-chrome";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { flashableLiveRoms } from "@/data/flash";
-import { DEVICE_NAME, rootSupportLabels } from "@/data/labels";
-import { getRootGuide, magiskDocLinks } from "@/data/root";
-import type { Metadata } from "next";
+import { flashableRomsOf } from "@/data/registry";
+import { rootSupportLabels } from "@/data/labels";
+import type { DeviceCatalog } from "@/data/types";
+import { pathsFor } from "@/lib/paths";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "Magisk và KernelSU",
-  description: `Root Pixel 7 Pro theo từng ROM còn sống. Magisk init_boot, KernelSU chỉ khi kernel ROM có sẵn. Không hướng dẫn giả Play Integrity.`,
-};
+export function RootOverviewView({ catalog }: { catalog: DeviceCatalog }) {
+  const paths = pathsFor(catalog.id);
+  const flashable = flashableRomsOf(catalog);
+  const lede =
+    catalog.id === "lg-v50"
+      ? `SD855 (${catalog.codename}) dùng boot.img cho Magisk, không phải init_boot. KernelSU không có kernel official. Không bypass Play Integrity.`
+      : `Tensor (${catalog.codename}) dùng init_boot cho Magisk, không phải boot.img. KernelSU chỉ khi kernel của đúng ROM đã build KSU. Không bypass Play Integrity.`;
 
-export default function RootOverviewPage() {
   return (
     <GuideChrome
+      backHref={paths.install}
+      backLabel={`← Cài đặt ${catalog.shortName}`}
       eyebrow="Root"
-      title="Magisk và KernelSU trên Pixel 7 Pro"
-      lede={`Tensor (cheetah) dùng init_boot cho Magisk, không phải boot.img. KernelSU chỉ khi kernel của đúng ROM đã build KSU. ${DEVICE_NAME} — không có bypass Play Integrity.`}
+      title={`Magisk và KernelSU trên ${catalog.shortName}`}
+      lede={lede}
       officialHref="https://topjohnwu.github.io/Magisk/install.html"
       officialLabel="Magisk install official"
     >
       <GuideSection title="Tài liệu gốc">
         <ul className="flex flex-col gap-1 text-sm">
-          {magiskDocLinks.map((link) => (
+          {catalog.magiskDocLinks.map((link) => (
             <li key={link.href}>
               <a
                 href={link.href}
@@ -38,10 +42,10 @@ export default function RootOverviewPage() {
         </ul>
       </GuideSection>
 
-      <GuideSection title="Từng ROM còn sống">
+      <GuideSection title="Từng ROM có guide flash">
         <ul className="space-y-3">
-          {flashableLiveRoms.map((rom) => {
-            const guide = getRootGuide(rom.slug);
+          {flashable.map((rom) => {
+            const guide = catalog.rootGuides[rom.slug];
             if (!guide) return null;
             return (
               <li
@@ -65,7 +69,7 @@ export default function RootOverviewPage() {
                 <Button
                   className="mt-3"
                   size="sm"
-                  render={<Link href={`/cai-dat/${rom.slug}#root`} />}
+                  render={<Link href={`${paths.flash(rom.slug)}#root`} />}
                 >
                   Magisk / KernelSU
                 </Button>

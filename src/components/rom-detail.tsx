@@ -15,12 +15,19 @@ import {
   integrityLabels,
   relockLabels,
 } from "@/data/labels";
-import { getFlashGuide } from "@/data/flash";
-import type { Rom } from "@/data/types";
+import type { DeviceCatalog, Rom } from "@/data/types";
+import { pathsFor } from "@/lib/paths";
 import Link from "next/link";
 
-export function RomDetail({ rom }: { rom: Rom }) {
-  const flashGuide = getFlashGuide(rom.slug);
+export function RomDetail({
+  rom,
+  catalog,
+}: {
+  rom: Rom;
+  catalog: DeviceCatalog;
+}) {
+  const paths = pathsFor(catalog.id);
+  const flashGuide = catalog.flashGuides[rom.slug];
   const facts = [
     ["Android", rom.versionLabel],
     ["Build", rom.buildLabel],
@@ -39,8 +46,8 @@ export function RomDetail({ rom }: { rom: Rom }) {
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
       <p className="text-sm text-muted-foreground">
-        <Link href="/" className="hover:text-foreground">
-          ← Catalog Pixel 7 Pro
+        <Link href={paths.home} className="hover:text-foreground">
+          ← Catalog {catalog.shortName}
         </Link>
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -61,25 +68,25 @@ export function RomDetail({ rom }: { rom: Rom }) {
             {relockLabels[flashGuide.relock]}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button render={<Link href={`/cai-dat/${rom.slug}`} />}>
+            <Button render={<Link href={paths.flash(rom.slug)} />}>
               Cách flash
             </Button>
             <Button
               variant="outline"
-              render={<Link href={`/cai-dat/${rom.slug}#tu-custom-rom`} />}
+              render={<Link href={`${paths.flash(rom.slug)}#tu-custom-rom`} />}
             >
               Từ ROM khác
             </Button>
             <Button
               variant="outline"
-              render={<Link href={`/cai-dat/${rom.slug}#root`} />}
+              render={<Link href={`${paths.flash(rom.slug)}#root`} />}
             >
               Magisk / KernelSU
             </Button>
             {!rom.isStock && (
               <Button
                 variant="outline"
-                render={<Link href="/cai-dat/unlock-bootloader" />}
+                render={<Link href={paths.unlock} />}
               >
                 Unlock bootloader
               </Button>
@@ -191,7 +198,7 @@ export function RomDetail({ rom }: { rom: Rom }) {
       )}
 
       <p className="mt-10 text-sm">
-        <Link href="/#so-sanh" className="text-teal-300 hover:underline">
+        <Link href={`${paths.home}#so-sanh`} className="text-teal-300 hover:underline">
           Quay lại bảng so sánh
         </Link>
       </p>

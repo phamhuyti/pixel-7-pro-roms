@@ -1,5 +1,5 @@
 import { sources } from "./sources";
-import type { Rom } from "./types";
+import type { Rom } from "../types";
 
 export const roms: Rom[] = [
   {

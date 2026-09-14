@@ -1,4 +1,4 @@
-import type { SwitchGuide } from "./types";
+import type { SwitchGuide } from "../types";
 
 export const switchOverview = {
   summary:

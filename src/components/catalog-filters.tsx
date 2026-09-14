@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
 import {
-  androidFilterOptions,
   bootlockLabels,
   googleLabels,
   groupLabels,
@@ -46,10 +45,12 @@ export function CatalogFiltersBar({
   filters,
   onChange,
   resultCount,
+  androidFilters,
 }: {
   filters: CatalogFilters;
   onChange: (next: CatalogFilters) => void;
   resultCount: number;
+  androidFilters: { value: string; label: string }[];
 }) {
   function toggleStatus(status: RomStatus) {
     const statuses = filters.statuses.includes(status)
@@ -164,7 +165,7 @@ export function CatalogFiltersBar({
           </Toggle>
         ))}
         <span className="mx-1 hidden h-7 w-px bg-border sm:block" />
-        {androidFilterOptions
+        {androidFilters
           .filter((option) => option.value !== "all")
           .map((option) => (
             <Toggle
@@ -176,7 +177,7 @@ export function CatalogFiltersBar({
                 onChange({
                   ...filters,
                   android: pressed
-                    ? (option.value as CatalogFilters["android"])
+                    ? option.value
                     : "all",
                 })
               }

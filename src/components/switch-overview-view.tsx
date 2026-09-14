@@ -1,34 +1,33 @@
 import { BulletList, GuideChrome, GuideSection } from "@/components/guide-chrome";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { flashableLiveRoms } from "@/data/flash";
-import { DEVICE_NAME } from "@/data/labels";
-import { getSwitchGuide, switchOverview } from "@/data/switch-rom";
-import type { Metadata } from "next";
+import { flashableRomsOf } from "@/data/registry";
+import type { DeviceCatalog } from "@/data/types";
+import { pathsFor } from "@/lib/paths";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "Flash khi đang ở custom ROM",
-  description: `Chuyển ROM trên ${DEVICE_NAME}: dirty flash cùng ROM, clean flash khi đổi ROM, về stock trước Graphene/Calyx.`,
-};
+export function SwitchOverviewView({ catalog }: { catalog: DeviceCatalog }) {
+  const paths = pathsFor(catalog.id);
+  const flashable = flashableRomsOf(catalog);
 
-export default function SwitchRomPage() {
   return (
     <GuideChrome
+      backHref={paths.install}
+      backLabel={`← Cài đặt ${catalog.shortName}`}
       eyebrow="Đang ở custom ROM"
       title="Flash khi máy đã có ROM khác"
-      lede={switchOverview.summary}
-      officialHref="/cai-dat"
-      officialLabel="Danh sách ROM còn sống"
+      lede={catalog.switchOverview.summary}
+      officialHref={paths.install}
+      officialLabel="Danh sách ROM có guide"
     >
       <GuideSection title="Quy tắc">
-        <BulletList items={switchOverview.rules} muted />
+        <BulletList items={catalog.switchOverview.rules} muted />
       </GuideSection>
 
       <GuideSection title="Từng ROM">
         <ul className="space-y-3">
-          {flashableLiveRoms.map((rom) => {
-            const guide = getSwitchGuide(rom.slug);
+          {flashable.map((rom) => {
+            const guide = catalog.switchGuides[rom.slug];
             if (!guide) return null;
             return (
               <li
@@ -52,7 +51,9 @@ export default function SwitchRomPage() {
                 <Button
                   className="mt-3"
                   size="sm"
-                  render={<Link href={`/cai-dat/${rom.slug}#tu-custom-rom`} />}
+                  render={
+                    <Link href={`${paths.flash(rom.slug)}#tu-custom-rom`} />
+                  }
                 >
                   Bước chi tiết
                 </Button>

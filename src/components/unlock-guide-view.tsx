@@ -1,21 +1,25 @@
 import { FlashSteps } from "@/components/flash-steps";
 import { BulletList, GuideChrome, GuideSection } from "@/components/guide-chrome";
 import { Button } from "@/components/ui/button";
-import { unlockGuide } from "@/data/unlock";
+import type { DeviceCatalog } from "@/data/types";
+import { pathsFor } from "@/lib/paths";
 import Link from "next/link";
 
-export function UnlockGuideView() {
-  const guide = unlockGuide;
+export function UnlockGuideView({ catalog }: { catalog: DeviceCatalog }) {
+  const paths = pathsFor(catalog.id);
+  const guide = catalog.unlockGuide;
 
   return (
     <GuideChrome
+      backHref={paths.install}
+      backLabel={`← Cài đặt ${catalog.shortName}`}
       eyebrow="Bước 0"
-      title="Mở khóa bootloader Pixel 7 Pro"
+      title={guide.title}
       lede={guide.summary}
       officialHref={guide.officialHref}
       officialLabel={guide.officialLabel}
       extraActions={
-        <Button variant="outline" render={<Link href="/cai-dat" />}>
+        <Button variant="outline" render={<Link href={paths.install} />}>
           Chọn ROM để flash
         </Button>
       }
@@ -29,7 +33,7 @@ export function UnlockGuideView() {
       </GuideSection>
 
       {guide.extraLinks && (
-        <GuideSection title="Công cụ official">
+        <GuideSection title="Công cụ / nguồn">
           <ul className="flex flex-col gap-1 text-sm">
             {guide.extraLinks.map((link) => (
               <li key={link.href}>

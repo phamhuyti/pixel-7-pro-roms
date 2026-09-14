@@ -11,6 +11,8 @@ export function GuideChrome({
   officialHref,
   officialLabel,
   extraActions,
+  backHref,
+  backLabel = "← Cài đặt",
   children,
 }: {
   eyebrow: string;
@@ -19,13 +21,15 @@ export function GuideChrome({
   officialHref: string;
   officialLabel: string;
   extraActions?: ReactNode;
+  backHref: string;
+  backLabel?: string;
   children: ReactNode;
 }) {
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
       <p className="text-sm text-muted-foreground">
-        <Link href="/cai-dat" className="hover:text-foreground">
-          ← Cài đặt Pixel 7 Pro
+        <Link href={backHref} className="hover:text-foreground">
+          {backLabel}
         </Link>
       </p>
       <p className="mt-5 font-mono text-xs tracking-[0.18em] text-teal-300 uppercase">

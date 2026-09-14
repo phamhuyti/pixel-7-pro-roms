@@ -15,11 +15,8 @@ import type {
   RootSupport,
 } from "./types";
 
-export const SNAPSHOT_DATE = "2026-09-13";
-export const SNAPSHOT_LABEL = "13 tháng 9, 2026";
-export const DEVICE_NAME = "Google Pixel 7 Pro";
-export const DEVICE_CODENAME = "cheetah";
-export const STOCK_SUPPORT_END = "tháng 10/2027";
+export const SNAPSHOT_DATE = "2026-09-14";
+export const SNAPSHOT_LABEL = "14 tháng 9, 2026";
 
 export const statusLabels: Record<RomStatus, string> = {
   stock: "Stock",
@@ -71,12 +68,14 @@ export const cameraLabels: Record<CameraSupport, string> = {
   "pixel-hal": "Gần Pixel / HAL vendor",
   gcam: "GCam / một phần",
   aosp: "Camera AOSP",
+  vendor: "Camera hãng / OEM",
 };
 
 export const installLabels: Record<InstallEase, string> = {
-  stock: "Cài sẵn / OTA Google",
+  stock: "Cài sẵn / OTA hãng",
   "web-flasher": "Web / device flasher",
   recovery: "Recovery + sideload",
+  desktop: "LGUP / KDZ trên máy tính",
 };
 
 export const flashMethodLabels: Record<FlashMethod, string> = {
@@ -104,6 +103,7 @@ export const esimLabels: Record<EsimSupport, string> = {
   yes: "Có",
   partial: "Một phần",
   unknown: "Chưa rõ",
+  no: "Không",
 };
 
 export const customizationLabels: Record<Customization, string> = {

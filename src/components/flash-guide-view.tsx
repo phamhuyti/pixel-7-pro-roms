@@ -4,24 +4,27 @@ import { RootGuideSections } from "@/components/root-guide-view";
 import { SwitchGuideSections } from "@/components/switch-guide-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getRootGuide } from "@/data/root";
-import { getSwitchGuide } from "@/data/switch-rom";
 import { flashMethodLabels, relockLabels } from "@/data/labels";
-import type { FlashGuide } from "@/data/types";
-import type { Rom } from "@/data/types";
+import type { DeviceCatalog, FlashGuide, Rom } from "@/data/types";
+import { pathsFor } from "@/lib/paths";
 import Link from "next/link";
 
 export function FlashGuideView({
+  catalog,
   rom,
   guide,
 }: {
+  catalog: DeviceCatalog;
   rom: Rom;
   guide: FlashGuide;
 }) {
-  const switchGuide = getSwitchGuide(rom.slug);
-  const rootGuide = getRootGuide(rom.slug);
+  const paths = pathsFor(catalog.id);
+  const switchGuide = catalog.switchGuides[rom.slug];
+  const rootGuide = catalog.rootGuides[rom.slug];
   return (
     <GuideChrome
+      backHref={paths.install}
+      backLabel={`← Cài đặt ${catalog.shortName}`}
       eyebrow={rom.shortName}
       title={`Flash ${rom.name}`}
       lede={guide.summary}
@@ -30,14 +33,11 @@ export function FlashGuideView({
       extraActions={
         <>
           {!rom.isStock && (
-            <Button
-              variant="outline"
-              render={<Link href="/cai-dat/unlock-bootloader" />}
-            >
+            <Button variant="outline" render={<Link href={paths.unlock} />}>
               Mở khóa bootloader
             </Button>
           )}
-          <Button variant="ghost" render={<Link href={`/roms/${rom.slug}`} />}>
+          <Button variant="ghost" render={<Link href={paths.rom(rom.slug)} />}>
             Chi tiết ROM
           </Button>
           {switchGuide && (
@@ -122,7 +122,12 @@ export function FlashGuideView({
       </GuideSection>
 
       {switchGuide && <SwitchGuideSections guide={switchGuide} />}
-      {rootGuide && <RootGuideSections guide={rootGuide} />}
+      {rootGuide && (
+        <RootGuideSections
+          guide={rootGuide}
+          magiskDocLinks={catalog.magiskDocLinks}
+        />
+      )}
     </GuideChrome>
   );
 }

@@ -1,5 +1,5 @@
 import { sources } from "./sources";
-import type { RootGuide } from "./types";
+import type { RootGuide } from "../types";
 
 const integrityNote =
   "Root làm Play Integrity yếu hơn stock. DenyList / Zygisk của Magisk chỉ ẩn Magisk khỏi từng app — không phải bypass Integrity. Trang này không hướng dẫn module giả attestation hay keybox.";
