@@ -13,7 +13,9 @@ export function RootOverviewView({ catalog }: { catalog: DeviceCatalog }) {
   const lede =
     catalog.id === "lg-v50"
       ? `SD855 (${catalog.codename}) dùng boot.img cho Magisk, không phải init_boot. KernelSU không có kernel official. Không bypass Play Integrity.`
-      : `Tensor (${catalog.codename}) dùng init_boot cho Magisk, không phải boot.img. KernelSU chỉ khi kernel của đúng ROM đã build KSU. Không bypass Play Integrity.`;
+      : catalog.id === "vivo-v40-lite"
+        ? `${catalog.chipset} (${catalog.codename}): bootloader không mở được theo kênh hỗ trợ — Magisk/KernelSU không có trên trang này. Không bypass Play Integrity.`
+        : `Tensor (${catalog.codename}) dùng init_boot cho Magisk, không phải boot.img. KernelSU chỉ khi kernel của đúng ROM đã build KSU. Không bypass Play Integrity.`;
 
   return (
     <GuideChrome
