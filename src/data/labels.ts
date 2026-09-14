@@ -95,7 +95,7 @@ export const relockLabels: Record<RelockAdvice, string> = {
 
 export const rootSupportLabels: Record<RootSupport, string> = {
   "official-optional": "Tùy chọn trên trang ROM",
-  unofficial: "Không official — init_boot",
+  unofficial: "Không official",
   unsupported: "Không hỗ trợ",
 };
 
