@@ -58,7 +58,7 @@ function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="rounded-xl border border-border bg-card/70 px-3 py-3 sm:px-4">
       <dt className="text-[11px] text-muted-foreground">{label}</dt>
-      <dd className="mt-1 font-heading text-lg font-semibold tracking-tight sm:text-xl">
+      <dd className="mt-1 font-heading text-lg font-semibold tracking-tight whitespace-nowrap sm:text-xl">
         {value}
       </dd>
     </div>
