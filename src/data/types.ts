@@ -37,7 +37,7 @@ export type InstallEase = "stock" | "web-flasher" | "recovery" | "desktop";
 
 export type EsimSupport = "yes" | "partial" | "unknown" | "no";
 
-export type DeviceId = "pixel-7-pro" | "lg-v50";
+export type DeviceId = "pixel-7-pro" | "lg-v50" | "vivo-v40-lite";
 
 export type Customization = "none" | "low" | "medium" | "high";
 

@@ -17,7 +17,13 @@ function subscribe(onStoreChange: () => void) {
 
 function readLastDevice(): DeviceId | null {
   const stored = window.localStorage.getItem(LAST_DEVICE_KEY);
-  if (stored === "pixel-7-pro" || stored === "lg-v50") return stored;
+  if (
+    stored === "pixel-7-pro" ||
+    stored === "lg-v50" ||
+    stored === "vivo-v40-lite"
+  ) {
+    return stored;
+  }
   return null;
 }
 
@@ -59,7 +65,7 @@ export function DevicePicker() {
           </p>
         )}
 
-        <ul className="mt-10 grid gap-4 md:grid-cols-2">
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {deviceList.map((device) => {
             const paths = pathsFor(device.id);
             return (

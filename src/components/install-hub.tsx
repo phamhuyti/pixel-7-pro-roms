@@ -77,7 +77,9 @@ export function InstallHub({ catalog }: { catalog: DeviceCatalog }) {
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {catalog.id === "lg-v50"
                 ? "Patch boot.img trên SD855. KernelSU không có kernel official. Không keybox / giả Integrity."
-                : "Patch init_boot trên Tensor. KernelSU chỉ khi kernel ROM có sẵn. Không keybox / giả Integrity."}
+                : catalog.id === "vivo-v40-lite"
+                  ? "Bootloader khóa — Magisk/KernelSU không hỗ trợ trên trang này. Không keybox / giả Integrity."
+                  : "Patch init_boot trên Tensor. KernelSU chỉ khi kernel ROM có sẵn. Không keybox / giả Integrity."}
             </p>
             <Button className="mt-4" render={<Link href={paths.root} />}>
               Root theo từng ROM

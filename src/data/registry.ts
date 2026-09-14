@@ -1,22 +1,29 @@
 import { v50Catalog } from "@/data/lg-v50/catalog";
 import { pixelCatalog } from "@/data/pixel-7-pro/catalog";
+import { v40LiteCatalog } from "@/data/vivo-v40-lite/catalog";
 import { recommendV50 } from "@/data/lg-v50/recommend";
 import { recommendRoms as recommendPixel } from "@/data/pixel-7-pro/recommend";
+import { recommendV40Lite } from "@/data/vivo-v40-lite/recommend";
 import type { DeviceCatalog, DeviceId, NeedId } from "@/data/types";
 import { assertGuideCoverage } from "@/lib/guide-coverage";
 import type { Recommendation } from "@/lib/recommend";
 
-export const deviceIds = ["pixel-7-pro", "lg-v50"] as const;
+export const deviceIds = ["pixel-7-pro", "lg-v50", "vivo-v40-lite"] as const;
 
 export const catalogs: Record<DeviceId, DeviceCatalog> = {
   "pixel-7-pro": pixelCatalog,
   "lg-v50": v50Catalog,
+  "vivo-v40-lite": v40LiteCatalog,
 };
 
 export const deviceList = deviceIds.map((id) => catalogs[id]);
 
 export function isDeviceId(value: string | undefined): value is DeviceId {
-  return value === "pixel-7-pro" || value === "lg-v50";
+  return (
+    value === "pixel-7-pro" ||
+    value === "lg-v50" ||
+    value === "vivo-v40-lite"
+  );
 }
 
 export function getCatalog(id: string): DeviceCatalog | undefined {
@@ -69,5 +76,6 @@ export function recommendFor(
   needs: NeedId[],
 ): Recommendation[] {
   if (catalog.id === "lg-v50") return recommendV50(needs);
+  if (catalog.id === "vivo-v40-lite") return recommendV40Lite(needs);
   return recommendPixel(needs);
 }
