@@ -1,7 +1,6 @@
 import { FlashSteps } from "@/components/flash-steps";
 import { BulletList, GuideSection } from "@/components/guide-chrome";
 import { Badge } from "@/components/ui/badge";
-import { magiskDocLinks } from "@/data/root";
 import { rootSupportLabels } from "@/data/labels";
 import type { RootGuide, RootMethodGuide } from "@/data/types";
 
@@ -48,7 +47,13 @@ function MethodBlock({
   );
 }
 
-export function RootGuideSections({ guide }: { guide: RootGuide }) {
+export function RootGuideSections({
+  guide,
+  magiskDocLinks,
+}: {
+  guide: RootGuide;
+  magiskDocLinks: { label: string; href: string }[];
+}) {
   return (
     <div id="root" className="scroll-mt-20">
       <GuideSection title="Root — Magisk và KernelSU">

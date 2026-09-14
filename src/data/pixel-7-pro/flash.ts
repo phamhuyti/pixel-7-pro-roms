@@ -1,6 +1,6 @@
 import { liveRoms } from "./roms";
 import { sources } from "./sources";
-import type { FlashGuide } from "./types";
+import type { FlashGuide } from "../types";
 
 const sharedWipe = "Unlock và flash factory/sideload lần đầu xóa dữ liệu nội bộ.";
 

@@ -4,13 +4,9 @@ import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  cadenceLabels,
-  googleLabels,
-  groupLabels,
-} from "@/data/labels";
-import { getFlashGuide } from "@/data/flash";
+import { cadenceLabels, googleLabels, groupLabels } from "@/data/labels";
 import type { Rom } from "@/data/types";
+import { useDevice } from "@/components/device-context";
 import Link from "next/link";
 
 export function RomCard({
@@ -24,13 +20,14 @@ export function RomCard({
   onToggle: (slug: string) => void;
   canSelect: boolean;
 }) {
+  const { catalog, paths } = useDevice();
   return (
     <article className="flex flex-col rounded-xl border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-heading text-base font-semibold">
-              <Link href={`/roms/${rom.slug}`} className="hover:underline">
+              <Link href={paths.rom(rom.slug)} className="hover:underline">
                 {rom.name}
               </Link>
             </h3>
@@ -58,14 +55,14 @@ export function RomCard({
         {rom.summary}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <Button size="sm" render={<Link href={`/roms/${rom.slug}`} />}>
+        <Button size="sm" render={<Link href={paths.rom(rom.slug)} />}>
           Chi tiết
         </Button>
-        {getFlashGuide(rom.slug) && (
+        {catalog.flashGuides[rom.slug] && (
           <Button
             size="sm"
             variant="outline"
-            render={<Link href={`/cai-dat/${rom.slug}`} />}
+            render={<Link href={paths.flash(rom.slug)} />}
           >
             Cách flash
           </Button>

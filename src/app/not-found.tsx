@@ -8,17 +8,14 @@ export default function NotFound() {
         404
       </p>
       <h1 className="font-heading text-2xl font-semibold">
-        Không có ROM hoặc trang này.
+        Không có máy, ROM hoặc trang này.
       </h1>
       <p className="text-sm text-muted-foreground">
-        Catalog chỉ gồm ROM có slug trong dữ liệu snapshot. Telegram unofficial
-        không được liệt kê.
+        Chọn điện thoại trên trang chủ. Catalog chỉ gồm ROM trong snapshot.
+        Telegram unofficial không được liệt kê.
       </p>
       <div className="flex flex-wrap gap-2">
-        <Button render={<Link href="/" />}>Về trang so sánh</Button>
-        <Button variant="outline" render={<Link href="/cai-dat" />}>
-          Cài đặt
-        </Button>
+        <Button render={<Link href="/" />}>Chọn điện thoại</Button>
       </div>
     </div>
   );

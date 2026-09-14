@@ -1,13 +1,5 @@
-import { CatalogApp } from "@/components/catalog-app";
-import { Disclaimer } from "@/components/disclaimer";
-import { Hero } from "@/components/hero";
+import { DevicePicker } from "@/components/device-picker";
 
 export default function Home() {
-  return (
-    <>
-      <Hero />
-      <Disclaimer />
-      <CatalogApp />
-    </>
-  );
+  return <DevicePicker />;
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { getFlashGuide } from "@/data/flash";
+import { useDevice } from "@/components/device-context";
 import { needLabels } from "@/data/labels";
+import { recommendFor } from "@/data/registry";
 import type { NeedId } from "@/data/types";
-import { recommendRoms } from "@/lib/recommend";
 import { cn } from "cn";
 import { Banknote, Camera, Palette, Shield, Unplug } from "lucide-react";
 import Link from "next/link";
@@ -31,8 +31,9 @@ export function Wizard({
 }: {
   onApply: (slugs: string[]) => void;
 }) {
+  const { catalog, paths } = useDevice();
   const [needs, setNeeds] = useState<NeedId[]>([]);
-  const picks = useMemo(() => recommendRoms(needs), [needs]);
+  const picks = useMemo(() => recommendFor(catalog, needs), [catalog, needs]);
 
   useEffect(() => {
     if (needs.length === 0) return;
@@ -58,8 +59,7 @@ export function Wizard({
               Bạn cần gì ở máy này?
             </h2>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Không có ROM “tốt nhất”. Chọn một hoặc nhiều nhu cầu — trang này
-              chỉ xếp các lựa chọn còn sống, kèm lý do.
+              {catalog.wizardLede}
             </p>
           </div>
           {needs.length > 0 && (
@@ -123,7 +123,7 @@ export function Wizard({
                     Gợi ý {index + 1}
                   </p>
                   <Link
-                    href={`/roms/${pick.rom.slug}`}
+                    href={paths.rom(pick.rom.slug)}
                     className="mt-1 block font-heading text-lg font-semibold hover:underline"
                   >
                     {pick.rom.name}
@@ -136,9 +136,9 @@ export function Wizard({
                       <li key={reason}>{reason}</li>
                     ))}
                   </ul>
-                  {getFlashGuide(pick.rom.slug) && (
+                  {catalog.flashGuides[pick.rom.slug] && (
                     <Link
-                      href={`/cai-dat/${pick.rom.slug}`}
+                      href={paths.flash(pick.rom.slug)}
                       className="mt-3 inline-block text-sm text-teal-300 hover:underline"
                     >
                       Cách flash

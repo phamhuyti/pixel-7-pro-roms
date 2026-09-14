@@ -1,7 +1,7 @@
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { DEVICE_NAME, SNAPSHOT_LABEL } from "@/data/labels";
+import { SNAPSHOT_LABEL } from "@/data/labels";
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
@@ -20,10 +20,10 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: `Custom ROM ${DEVICE_NAME}`,
-    template: `%s · Cheetah ROMs`,
+    default: "Custom ROM catalog",
+    template: `%s · ROM catalog`,
   },
-  description: `So sánh và hướng dẫn cài custom ROM còn duy trì cho ${DEVICE_NAME} (cheetah). Snapshot ${SNAPSHOT_LABEL}. Không hướng dẫn root hay bypass Integrity.`,
+  description: `Chọn điện thoại, rồi so sánh và flash custom ROM còn kiểm chứng được. Snapshot ${SNAPSHOT_LABEL}. Không hướng dẫn giả Play Integrity.`,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,15 +1,27 @@
-# Custom ROM Pixel 7 Pro (cheetah)
+# Catalog custom ROM (chọn máy trước)
 
-Trang so sánh tiếng Việt các custom ROM **official / community có trang tải công khai** cho Google Pixel 7 Pro. Snapshot curated, không scrape realtime.
+Trang so sánh tiếng Việt các custom ROM **official / community có trang tải công khai**. Snapshot curated, không scrape realtime.
 
-Stock Pixel OS được đưa vào như **mốc so sánh**: máy vẫn nhận cập nhật đến tháng 10/2027. Custom ROM chỉ đáng cân nhắc khi bạn cần hardening, deGoogle, hoặc tùy biến.
+**Trang chủ chỉ chọn điện thoại.** Catalog, flash và Magisk nằm sau khi chọn máy:
+
+- [`/pixel-7-pro`](src/app/[device]/page.tsx) — Google Pixel 7 Pro (`cheetah`)
+- [`/lg-v50`](src/app/[device]/page.tsx) — LG V50 ThinQ (`flashlmdd`)
+
+URL cũ `/cai-dat` và `/roms/:slug` redirect sang Pixel 7 Pro.
 
 ## Không làm gì
 
 - Không catalog bản Telegram unofficial
 - Không hướng dẫn giả Play Integrity (module attestation / keybox)
 
-Cài ROM: trang [`/cai-dat`](src/app/cai-dat/page.tsx) — unlock, flash, chuyển từ custom ROM, Magisk/KernelSU. Wiki dự án thắng nếu lệch. Mở bootloader xóa dữ liệu.
+Cài ROM: `/{máy}/cai-dat` — unlock, flash, chuyển từ custom ROM, Magisk/KernelSU. Wiki dự án thắng nếu lệch.
+
+## Máy
+
+| Máy | Ghi chú snapshot 14/09/2026 |
+| --- | --- |
+| Pixel 7 Pro | Stock còn vá đến 10/2027. Graphene/Calyx/Lineage và fork A16 còn kiểm chứng. Unlock official `fastboot flashing unlock`. Magisk: `init_boot`. |
+| LG V50 ThinQ | Stock hết vá (A12). LineageOS 21 từng official, wiki ghi *no longer maintained*. Không OEM unlock. Magisk: `boot.img`. Dual Screen không chạy trên Lineage. |
 
 ## Chạy local
 
@@ -37,25 +49,9 @@ Mở [http://127.0.0.1:43123](http://127.0.0.1:43123). Image production dùng `o
 
 ## Dữ liệu
 
-- [`src/data/roms.ts`](src/data/roms.ts) — catalog ROM (stock, đang duy trì, cũ, đã ngừng)
-- [`src/data/flash.ts`](src/data/flash.ts) — hướng dẫn flash ROM còn sống
-- [`src/data/switch-rom.ts`](src/data/switch-rom.ts) — đang ở custom ROM khác
-- [`src/data/root.ts`](src/data/root.ts) — Magisk / KernelSU
-- [`src/data/unlock.ts`](src/data/unlock.ts) — mở khóa bootloader
-- [`src/data/sources.ts`](src/data/sources.ts) — URL official
+- [`src/data/registry.ts`](src/data/registry.ts) — danh sách máy
+- [`src/data/pixel-7-pro/`](src/data/pixel-7-pro/) — catalog Pixel
+- [`src/data/lg-v50/`](src/data/lg-v50/) — catalog V50
 - [`src/data/labels.ts`](src/data/labels.ts) — ngày snapshot và nhãn tiếng Việt
-
-Nguồn chính lúc snapshot 13/09/2026: GrapheneOS releases, CalyxOS, LineageOS wiki/download, Evolution X, crDroid, Infinity-X changelog, iodéOS, /e/OS, RisingOS, DerpFest, PixelOS, CustomRomBay (đối chiếu tên cũ).
-
-## Gợi ý nhanh
-
-| Nhu cầu | Hướng đi |
-| --- | --- |
-| Bảo mật tối đa | GrapheneOS |
-| DeGoogle dễ dùng | CalyxOS hoặc iodéOS |
-| AOSP sạch, lâu dài | LineageOS |
-| Gần Pixel + theme | Evolution X / Infinity-X |
-| Tùy biến nhiều | crDroid |
-| Ngân hàng / Wallet | Ở stock đến 10/2027 |
 
 Telegram “ROM mới mỗi tuần” không có trong catalog này.

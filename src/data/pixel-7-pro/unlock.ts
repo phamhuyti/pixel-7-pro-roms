@@ -1,7 +1,8 @@
 import { sources } from "./sources";
-import type { UnlockGuide } from "./types";
+import type { UnlockGuide } from "../types";
 
 export const unlockGuide: UnlockGuide = {
+  title: "Mở khóa bootloader Pixel 7 Pro",
   summary:
     "Mọi custom ROM trên Pixel 7 Pro đều cần bootloader đã mở. Lệnh official là `fastboot flashing unlock` — không phải `fastboot oem unlock`. Bước này xóa toàn bộ dữ liệu trên máy.",
   officialHref: sources.lineageInstall,

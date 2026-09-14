@@ -26,11 +26,18 @@ export type Cadence =
 
 export type Integrity = "stock" | "limited" | "weak" | "unknown";
 
-export type CameraSupport = "stock-pixel" | "pixel-hal" | "gcam" | "aosp";
+export type CameraSupport =
+  | "stock-pixel"
+  | "pixel-hal"
+  | "gcam"
+  | "aosp"
+  | "vendor";
 
-export type InstallEase = "stock" | "web-flasher" | "recovery";
+export type InstallEase = "stock" | "web-flasher" | "recovery" | "desktop";
 
-export type EsimSupport = "yes" | "partial" | "unknown";
+export type EsimSupport = "yes" | "partial" | "unknown" | "no";
+
+export type DeviceId = "pixel-7-pro" | "lg-v50";
 
 export type Customization = "none" | "low" | "medium" | "high";
 
@@ -102,6 +109,7 @@ export type SwitchGuide = {
 };
 
 export type UnlockGuide = {
+  title: string;
   summary: string;
   officialHref: string;
   officialLabel: string;
@@ -151,3 +159,40 @@ export type NeedId =
   | "camera"
   | "degoogle"
   | "customize";
+
+export type DeviceFaq = {
+  q: string;
+  a: string;
+};
+
+export type DeviceCatalog = {
+  id: DeviceId;
+  name: string;
+  shortName: string;
+  codename: string;
+  manufacturer: string;
+  chipset: string;
+  released: string;
+  stockSupportEnd: string;
+  pickerSummary: string;
+  pickerWarning?: string;
+  heroTitle: string;
+  heroLede: string;
+  wizardLede: string;
+  installHubLede: string;
+  unlockBlurb: string;
+  sourcesNote: string;
+  stockRestoreHref: string;
+  stockRestoreLabel: string;
+  faq: DeviceFaq[];
+  androidFilters: { value: string; label: string }[];
+  androidOlderBelow: number;
+  defaultCompareSlugs: string[];
+  roms: Rom[];
+  unlockGuide: UnlockGuide;
+  flashGuides: Record<string, FlashGuide>;
+  switchGuides: Record<string, SwitchGuide>;
+  switchOverview: { summary: string; rules: string[] };
+  rootGuides: Record<string, RootGuide>;
+  magiskDocLinks: { label: string; href: string }[];
+};
