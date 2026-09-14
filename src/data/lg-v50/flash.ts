@@ -44,6 +44,11 @@ export const flashGuides: Record<string, FlashGuide> = {
         href: sources.lgFirmwaresHow,
         detail: "Thứ tự LGUP trên trang đó thắng nếu lệch bản tiếng Việt này.",
       },
+      {
+        label: "Kho LGUP / KDZ mẫu (Synology)",
+        href: sources.v50ArchiveShare,
+        detail: "LGUP + DLL và KDZ mẫu trong share — vẫn phải đúng model; không thay lg-firmwares.",
+      },
     ],
     steps: [
       {

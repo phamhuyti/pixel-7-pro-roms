@@ -17,6 +17,10 @@ export const unlockGuide: UnlockGuide = {
       href: sources.unlockXdaNews,
     },
     { label: "Platform-tools (adb / fastboot)", href: sources.platformTools },
+    {
+      label: "Kho công cụ V50 (Synology share)",
+      href: sources.v50ArchiveShare,
+    },
   ],
   warnings: [
     "Không có nút OEM unlocking như Pixel. Ép unlock sai file engineering / sai biến thể = brick cứng.",
@@ -25,12 +29,14 @@ export const unlockGuide: UnlockGuide = {
     "Sprint / Verizon / Hàn / EU dùng bộ file khác nhau. LM-V500N không phải LM-V500EM.",
     "Unlock xóa dữ liệu. Gỡ tài khoản Google trước (FRP).",
     "Sau custom ROM: đừng `fastboot oem lock` / `flashing lock`.",
+    "Kho Synology chỉ là snapshot công cụ đã dùng (engineering ABL, firehose, QPST, LGUP, recovery). Không phải kênh official; đối chiếu checksum với XDA trước khi flash.",
   ],
   requirements: [
     "Đúng model trên tem / Cài đặt → Giới thiệu: LM-V500EM, LM-V500N, hoặc LM-V450 (Sprint).",
-    "Máy tính Windows thường dùng QFIL (EDL 9008). Cáp data, cổng USB thẳng.",
-    "Pin trên 50%. Sao lưu ảnh, eSIM không có — V50 không eSIM.",
-    "Thread XDA “Guide LG G8/G8x/v50 Bootloader Unlock and Magisk Root using Firehose” — lấy engineering ABL đúng máy từ đó, không file lạ.",
+    "Máy tính Windows thường dùng QFIL/QPST (EDL 9008) + Qualcomm USB driver (QUD). Cáp data, cổng USB thẳng.",
+    "Pin trên 50%. Sao lưu ảnh — V50 không eSIM.",
+    "Thread XDA “Guide LG G8/G8x/v50 Bootloader Unlock and Magisk Root using Firehose” — lấy engineering ABL đúng máy từ đó (trong kho share: `abl_a.bin` / `abl_G8_G8X_V50_CND.bin` và `prog_ufs_firehose_sm8150_lge.elf`).",
+    "Biết tổ hợp phím: Download/EDL và Recovery (xem bước dưới).",
   ],
   steps: [
     {
@@ -42,13 +48,18 @@ export const unlockGuide: UnlockGuide = {
       body: "Ghi lại LM-V50xxxx và software version. Nhiều hướng dẫn giả định Android 10 khi vào EDL lần đầu. Đừng đổi KDZ giữa chừng nếu thread yêu cầu đúng bản.",
     },
     {
+      title: "Nhớ tổ hợp phím đặc biệt",
+      body: "Recovery (wiki Lineage): máy tắt → giữ Volume xuống + Nguồn đến logo LG → thả Nguồn 1 giây rồi giữ lại đến khi vào recovery. Nếu hiện hỏi factory reset, xác nhận bằng phím cứng — với recovery đúng thì không xóa máy. Download / Fastboot / cáp: máy tắt → giữ Volume lên rồi cắm USB. EDL 9008 thường là máy tắt, giữ Volume xuống rồi cắm USB (một số máy khác — xem XDA).",
+      note: "Ghi chú boot modes cũng nằm trong kho PhoneRoot kèm share unlock.",
+    },
+    {
       title: "Vào EDL (9008) và backup",
-      body: "Máy tắt: giữ Volume xuống rồi cắm USB (một số máy cần tổ hợp khác — xem XDA). QFIL Partition Manager: đọc/backup đúng phân vùng thread nêu (thường gồm abl_a, abl_b). Cất file .bin ra chỗ an toàn.",
+      body: "Cài QPST/QFIL + firehose `prog_ufs_firehose_sm8150_lge.elf` (đúng chip SM8150/V50). QFIL Partition Manager: đọc/backup đúng phân vùng thread nêu (thường gồm abl_a, abl_b). Cất file .bin ra chỗ an toàn — không chia sẻ backup có modemst/fsg (IMEI).",
     },
     {
       title: "Nạp engineering ABL rồi vào Fastboot",
-      body: "Chỉ load ABL engineering của đúng gói V50/G8 trên XDA. Sau đó reboot Fastboot (Volume xuống + nguồn, hoặc cắm USB khi giữ Volume xuống). Fastboot phải hiện Device State: locked.",
-      note: "Trang này không host firehose / ABL. Sai programmer brick máy.",
+      body: "Chỉ load ABL engineering của đúng gói V50/G8 trên XDA (hoặc file tương ứng trong kho share). Sau đó reboot Fastboot (Volume xuống + nguồn, hoặc cắm USB khi giữ Volume lên/xuống theo thread). Fastboot phải hiện Device State: locked.",
+      note: "Trang web không host firehose / ABL trong git. Sai programmer brick máy.",
     },
     {
       title: "Unlock",
@@ -70,9 +81,10 @@ export const unlockGuide: UnlockGuide = {
     "Boot có cảnh báo unlocked. Stock setup lại, bật USB debugging.",
     "Lineage yêu cầu Magisk trên stock trước khi dd recovery — xem Magisk/KernelSU.",
     "Không khóa bootloader sau Lineage / GSI.",
+    "Recovery cộng đồng trong kho (OrangeFox / TWRP flashlmdd) chỉ dùng khi bạn hiểu rủi ro — wiki Lineage ưu tiên dd boot.img recovery của chính build Lineage.",
   ],
   cannotUnlock: [
-    "QFIL không thấy 9008: đổi cáp, driver Qualcomm, cổng USB.",
+    "QFIL không thấy 9008: đổi cáp, driver Qualcomm (QUD), cổng USB, đúng firehose SM8150 LGE.",
     "Không có engineering ABL đúng biến thể — đừng lấy file G8 gắn cho V50 nếu thread không nói máy bạn.",
     "fastboot không lên: chưa nạp ABL engineering, hoặc đã restore quá sớm.",
   ],

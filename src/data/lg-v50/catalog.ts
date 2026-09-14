@@ -19,7 +19,7 @@ export const v50Catalog: DeviceCatalog = {
   pickerSummary:
     "SD855, stock hết vá. LineageOS 21 từng official rồi dừng maintain. Unlock không có kênh OEM.",
   pickerWarning:
-    "Không có custom ROM còn nightly official. Catalog nêu wiki còn sống và kho zip công khai — không catalog Telegram.",
+    "Không có custom ROM còn nightly official. Catalog nêu wiki còn sống, kho zip công khai, và kho công cụ Synology cá nhân — không catalog Telegram.",
   heroTitle: "V50 không còn ROM “còn sống” kiểu Pixel — chỉ còn wiki và kho đóng băng.",
   heroLede:
     "LG đã ngừng hỗ trợ. LineageOS ghi flashlmdd no longer maintained (trước đó 21 / Android 14). Trang này tóm tắt unlock cộng đồng, KDZ, và wiki cài Lineage — wiki thắng nếu lệch.",
@@ -30,7 +30,7 @@ export const v50Catalog: DeviceCatalog = {
   unlockBlurb:
     "LG không có OEM unlocking. Unlock unofficial (EDL / engineering ABL) theo XDA; Lineage không hỗ trợ bước này.",
   sourcesNote:
-    "Nguồn snapshot: wiki LineageOS flashlmdd (install/build, không còn download official), download.lineage.microg.org (zip 02/05/2026), XDA unlock Firehose G8/V50, lg-firmwares KDZ, thread /e/OS unofficial đã đóng, XDA GSI Evolution X 2023. Telegram không được liệt kê.",
+    "Nguồn snapshot: wiki LineageOS flashlmdd (install/build, không còn download official), download.lineage.microg.org (zip 02/05/2026), XDA unlock Firehose G8/V50, lg-firmwares KDZ, thread /e/OS unofficial đã đóng, XDA GSI Evolution X 2023, cộng kho Synology cá nhân (công cụ unlock/LGUP/recovery và một số zip unofficial có ngày). Telegram không được liệt kê. Backup IMEI / dump phân vùng cá nhân không đưa lên web.",
   stockRestoreHref: sources.lgFirmwares,
   stockRestoreLabel: "KDZ lg-firmwares",
   faq: [
@@ -54,9 +54,18 @@ export const v50Catalog: DeviceCatalog = {
       q: "Magisk?",
       a: "Vá boot.img, không phải init_boot. Wiki Lineage bắt root stock trước khi dd recovery. Không giả Play Integrity.",
     },
+    {
+      q: "Kho Synology trong catalog là gì?",
+      a: "Share File Station chứa công cụ unlock (engineering ABL, firehose, QPST, LGUP), recovery OrangeFox/TWRP, KDZ mẫu và một số zip unofficial (Lineage 22.2, Matrixx, riceDroid) đã dùng trên máy này. Không thay wiki/XDA; không host backup IMEI. Link nằm ở mục nguồn / trang unlock.",
+    },
+    {
+      q: "Vào recovery / download mode thế nào?",
+      a: "Recovery: máy tắt, giữ Volume xuống + Nguồn đến logo LG, thả Nguồn 1 giây rồi giữ lại. Download/fastboot qua cáp: máy tắt, giữ Volume lên rồi cắm USB. EDL 9008: thường Volume xuống + cắm USB (xem XDA).",
+    },
   ],
   androidFilters: [
     { value: "all", label: "Mọi Android" },
+    { value: "15", label: "Android 15" },
     { value: "14", label: "Android 14" },
     { value: "12", label: "Android 12" },
     { value: "older", label: "Android 11 trở xuống" },
