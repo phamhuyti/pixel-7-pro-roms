@@ -37,8 +37,6 @@ chmod +x lineageos-cheetah-flash.sh
 
 File nguồn: [`public/tools/lineageos-cheetah-flash.sh`](public/tools/lineageos-cheetah-flash.sh) (và bản sao [`tools/`](tools/lineageos-cheetah-flash.sh)). Cần `adb`/`fastboot`, `python3`, firmware stock Android 16, bootloader unlocked, đúng máy `cheetah`.
 
-Hotspot 6GHz (VPNHotspot + mã vùng): [`/pixel-7-pro/cai-dat/hotspot-6ghz`](src/app/[device]/cai-dat/hotspot-6ghz/page.tsx) — dữ liệu [`src/data/pixel-7-pro/hotspot-6ghz.ts`](src/data/pixel-7-pro/hotspot-6ghz.ts).
-
 ## Máy
 
 | Máy | Ghi chú snapshot 14/09/2026 |
