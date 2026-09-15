@@ -54,6 +54,39 @@ export function InstallHub({ catalog }: { catalog: DeviceCatalog }) {
         </div>
       </section>
 
+      {catalog.id === "pixel-7-pro" && (
+        <section className="mt-12">
+          <h2 className="font-heading text-2xl font-semibold tracking-tight">
+            Auto-flash LineageOS
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Kiểu GrapheneOS web installer: WebUSB unlock + flash recovery
+            images. Cần firmware stock Android 16 và máy Pixel 7 Pro (cheetah).
+          </p>
+          <div className="mt-4 rounded-xl border border-teal-500/35 bg-teal-500/8 p-5">
+            <h3 className="font-heading text-lg font-semibold">
+              WebUSB auto-flash
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Chrome/Edge → nạp nightly official (SHA256) → flash boot / dtbo /
+              vendor_boot. Sideload zip ROM vẫn trên recovery. Không khóa
+              bootloader.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button render={<Link href={paths.lineageWeb} />}>
+                Vào Auto-flash
+              </Button>
+              <Button
+                variant="outline"
+                render={<Link href={paths.flash("lineageos")} />}
+              >
+                Guide + script CLI
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="mt-12">
         <h2 className="font-heading text-2xl font-semibold tracking-tight">
           Đang ở ROM khác, hoặc cần root
@@ -140,7 +173,20 @@ export function InstallHub({ catalog }: { catalog: DeviceCatalog }) {
                   {guide.summary}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <Button size="sm" render={<Link href={paths.flash(rom.slug)} />}>
+                  {rom.slug === "lineageos" && catalog.id === "pixel-7-pro" && (
+                    <Button size="sm" render={<Link href={paths.lineageWeb} />}>
+                      Auto-flash
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant={
+                      rom.slug === "lineageos" && catalog.id === "pixel-7-pro"
+                        ? "outline"
+                        : "default"
+                    }
+                    render={<Link href={paths.flash(rom.slug)} />}
+                  >
                     Cách flash
                   </Button>
                   <Button

@@ -55,6 +55,11 @@ export function RomCard({
         {rom.summary}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
+        {rom.slug === "lineageos" && catalog.id === "pixel-7-pro" && (
+          <Button size="sm" render={<Link href={paths.lineageWeb} />}>
+            Auto-flash
+          </Button>
+        )}
         <Button size="sm" render={<Link href={paths.rom(rom.slug)} />}>
           Chi tiết
         </Button>

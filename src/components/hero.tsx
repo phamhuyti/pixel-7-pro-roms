@@ -36,6 +36,11 @@ export function Hero({ catalog }: { catalog: DeviceCatalog }) {
             <Button render={<Link href={paths.install} />}>
               Unlock và flash
             </Button>
+            {catalog.id === "pixel-7-pro" && (
+              <Button variant="secondary" render={<Link href={paths.lineageWeb} />}>
+                Auto-flash LineageOS
+              </Button>
+            )}
             <Button variant="outline" render={<Link href="/" />}>
               Đổi máy
             </Button>

@@ -13,9 +13,9 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
-  title: "Web installer LineageOS",
+  title: "Auto-flash LineageOS",
   description:
-    "WebUSB installer kiểu GrapheneOS cho LineageOS trên Pixel 7 Pro (cheetah): unlock, nạp nightly official + SHA256, flash recovery images.",
+    "Auto-flash WebUSB kiểu GrapheneOS cho LineageOS trên Pixel 7 Pro (cheetah): unlock, nạp nightly official + SHA256, flash recovery images.",
 };
 
 export default async function LineageWebInstallPage({
@@ -34,7 +34,7 @@ export default async function LineageWebInstallPage({
       backHref={paths.flash("lineageos")}
       backLabel="← Flash LineageOS"
       eyebrow="WebUSB · cheetah"
-      title="Web installer LineageOS"
+      title="Auto-flash LineageOS"
       lede="Bám mô hình grapheneos.org/install/web: WebUSB unlock + flash. Khác GrapheneOS: mirror Lineage không CORS nên nạp file local (đối chiếu SHA256), và zip ROM vẫn sideload qua recovery — không khóa bootloader."
       officialHref={sources.lineageInstall}
       officialLabel="Wiki LineageOS cheetah"

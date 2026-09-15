@@ -238,7 +238,7 @@ export const flashGuides: Record<string, FlashGuide> = {
   lineageos: {
     method: "web-installer",
     officialHref: sources.lineageWebInstall,
-    officialLabel: "Web installer LineageOS",
+    officialLabel: "Auto-flash LineageOS",
     extraLinks: [
       { label: "Wiki cài LineageOS cheetah", href: sources.lineageInstall },
       { label: "Tải nightly + recovery", href: sources.lineageDownloads },
@@ -268,7 +268,7 @@ export const flashGuides: Record<string, FlashGuide> = {
     ],
     downloads: [
       {
-        label: "Web installer (WebUSB)",
+        label: "Auto-flash (WebUSB)",
         href: sources.lineageWebInstall,
         detail:
           "Kiểu grapheneos.org/install/web: Unlock → nạp nightly + SHA256 → Flash boot/dtbo/vendor_kernel_boot/vendor_boot. Format data + sideload zip vẫn trên recovery / adb.",
@@ -296,8 +296,8 @@ export const flashGuides: Record<string, FlashGuide> = {
         body: "Nếu không chắc, flash stock bằng Android Flash Tool rồi mới tiếp. Wiki không hướng dẫn up/downgrade tại chỗ. Web installer / script giả định firmware đã đúng.",
       },
       {
-        title: "Cách khuyến nghị: Web installer (như GrapheneOS)",
-        body: "Mở trang Web installer LineageOS trên catalog này. Chrome/Edge + máy ở Fastboot. Unlock (nếu cần) → mở link tải 5 file nightly → Nạp file đã tải (SHA256) → Flash recovery images. Sau đó Format data + adb sideload zip trên recovery — installer hướng dẫn từng bước.",
+        title: "Cách khuyến nghị: Auto-flash WebUSB (như GrapheneOS)",
+        body: "Từ trang máy bấm “Auto-flash LineageOS”, hoặc mở /pixel-7-pro/cai-dat/lineageos/web. Chrome/Edge + máy ở Fastboot. Unlock (nếu cần) → mở link tải 5 file nightly → Nạp file đã tải (SHA256) → Flash recovery images. Sau đó Format data + adb sideload zip trên recovery — installer hướng dẫn từng bước.",
         note: "Khác GrapheneOS: không flash hết OS trong một factory zip, và không khóa bootloader.",
       },
       {

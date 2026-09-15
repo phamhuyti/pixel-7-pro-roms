@@ -68,7 +68,19 @@ export function RomDetail({
             {relockLabels[flashGuide.relock]}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button render={<Link href={paths.flash(rom.slug)} />}>
+            {rom.slug === "lineageos" && catalog.id === "pixel-7-pro" && (
+              <Button render={<Link href={paths.lineageWeb} />}>
+                Auto-flash
+              </Button>
+            )}
+            <Button
+              variant={
+                rom.slug === "lineageos" && catalog.id === "pixel-7-pro"
+                  ? "outline"
+                  : "default"
+              }
+              render={<Link href={paths.flash(rom.slug)} />}
+            >
               Cách flash
             </Button>
             <Button
