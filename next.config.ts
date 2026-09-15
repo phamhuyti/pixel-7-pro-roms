@@ -1,8 +1,30 @@
+import { execSync } from "node:child_process";
 import type { NextConfig } from "next";
+
+function gitSha(): string {
+  try {
+    return execSync("git rev-parse --short HEAD", {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "";
+  }
+}
+
+const BUILD_SHA =
+  process.env.NEXT_PUBLIC_BUILD_SHA?.trim() || gitSha() || "unknown";
+const BUILD_TIME =
+  process.env.NEXT_PUBLIC_BUILD_TIME?.trim() || new Date().toISOString();
+
+process.env.NEXT_PUBLIC_BUILD_SHA = BUILD_SHA;
+process.env.NEXT_PUBLIC_BUILD_TIME = BUILD_TIME;
 
 const nextConfig: NextConfig = {
   agentRules: false,
   output: "standalone",
+  generateBuildId: async () =>
+    `${BUILD_SHA}-${BUILD_TIME.replace(/[:.]/g, "")}`,
   transpilePackages: [
     "@noble/hashes",
     "android-fastboot",

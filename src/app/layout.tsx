@@ -1,3 +1,4 @@
+import { BuildBanner } from "@/components/build-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <TooltipProvider>
           <SiteHeader />
+          <BuildBanner />
           <main className="flex-1">{children}</main>
           <SiteFooter />
         </TooltipProvider>
