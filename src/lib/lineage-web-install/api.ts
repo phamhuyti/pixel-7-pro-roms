@@ -55,7 +55,7 @@ export function parseCheetahBuilds(builds: unknown): ResolvedRelease {
 }
 
 async function fetchBuildsJson(apiUrl: string): Promise<unknown> {
-  const resp = await fetch(apiUrl, { signal: AbortSignal.timeout(12_000) });
+  const resp = await fetch(apiUrl, { signal: AbortSignal.timeout(8_000) });
   if (!resp.ok) {
     throw new Error(`API LineageOS lỗi: ${resp.status} ${resp.statusText}`);
   }
@@ -68,17 +68,18 @@ export async function fetchLatestCheetahRelease(
   return parseCheetahBuilds(await fetchBuildsJson(apiUrl));
 }
 
-/** Direct download.lineageos.org API, then same-origin proxy if CORS/network fails. */
+/** Same-origin proxy first (no CORS), then download.lineageos.org. */
 export async function fetchLatestCheetahReleaseWithFallback(): Promise<ResolvedRelease> {
-  try {
-    return await fetchLatestCheetahRelease(LINEAGE_BUILDS_API);
-  } catch (first) {
+  const urls = [LINEAGE_BUILDS_API_PROXY, LINEAGE_BUILDS_API];
+  let last: unknown;
+  for (const url of urls) {
     try {
-      return await fetchLatestCheetahRelease(LINEAGE_BUILDS_API_PROXY);
-    } catch {
-      throw first;
+      return await fetchLatestCheetahRelease(url);
+    } catch (error) {
+      last = error;
     }
   }
+  throw last instanceof Error ? last : new Error(String(last));
 }
 
 export function requiredFilesOf(release: ResolvedRelease): LineageBuildFile[] {
