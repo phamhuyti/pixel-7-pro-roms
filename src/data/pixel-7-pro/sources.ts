@@ -42,4 +42,7 @@ export const sources = {
   magiskReleases: "https://github.com/topjohnwu/Magisk/releases",
   kernelsuInstall: "https://kernelsu.org/guide/installation.html",
   kernelsuReleases: "https://github.com/tiann/KernelSU/releases",
+  vpnHotspotReleases: "https://github.com/Mygod/VPNHotspot/releases",
+  vpnHotspotRepo: "https://github.com/Mygod/VPNHotspot",
+  termuxFDroid: "https://f-droid.org/packages/com.termux/",
 } as const;

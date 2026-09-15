@@ -88,6 +88,28 @@ export function InstallHub({ catalog }: { catalog: DeviceCatalog }) {
         </div>
       </section>
 
+      {catalog.topicGuides?.["hotspot-6ghz"] && (
+        <section className="mt-12">
+          <h2 className="font-heading text-2xl font-semibold tracking-tight">
+            Pipeline đặc biệt
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Nối unlock → Lineage → Magisk → SoftAP 6GHz (không thay wiki flash).
+          </p>
+          <div className="mt-4 rounded-xl border border-border bg-card p-5">
+            <h3 className="font-heading text-lg font-semibold">
+              {catalog.topicGuides["hotspot-6ghz"].title}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {catalog.topicGuides["hotspot-6ghz"].summary}
+            </p>
+            <Button className="mt-4" render={<Link href={paths.hotspot6ghz} />}>
+              Xem hướng dẫn 6GHz
+            </Button>
+          </div>
+        </section>
+      )}
+
       <section className="mt-12">
         <h2 className="font-heading text-2xl font-semibold tracking-tight">
           ROM có hướng dẫn flash
