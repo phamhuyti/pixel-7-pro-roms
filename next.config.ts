@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   agentRules: false,
   output: "standalone",
+  transpilePackages: ["android-fastboot"],
   async redirects() {
     return [
       {

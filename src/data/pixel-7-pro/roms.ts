@@ -190,10 +190,10 @@ export const roms: Rom[] = [
       "Vendor camera thường chạy được; tính năng đám mây Google phụ thuộc việc bạn flash GApps.",
     esim: "yes",
     customization: "medium",
-    install: "recovery",
+    install: "web-flasher",
     tagline: "AOSP sạch, official lâu năm — điểm giữa stock và ROM theme.",
     summary:
-      "LineageOS 23.2 cho cheetah do maintainer official, nightly Android 16. Cần firmware stock Android 16 trước khi cài. Không GApps sẵn; MindTheGapps hoặc bản vanilla là lựa chọn của bạn. Phù hợp người muốn Android sạch, cập nhật dài, ít “rice”.",
+      "LineageOS 23.2 cho cheetah do maintainer official, nightly Android 16. Cần firmware stock Android 16 trước khi cài. Catalog có WebUSB installer (kiểu GrapheneOS) + script CLI; zip ROM vẫn sideload recovery. Không GApps sẵn; MindTheGapps hoặc vanilla tuỳ bạn.",
     strengths: [
       "Official, chữ ký, wiki cài rõ",
       "Nightly đều, cộng đồng lớn",
