@@ -35,7 +35,7 @@ export default async function LineageWebInstallPage({
       backLabel="← Flash LineageOS"
       eyebrow="WebUSB · cheetah"
       title="Web installer LineageOS"
-      lede="Bám mô hình grapheneos.org/install/web: WebUSB unlock + flash. Khác GrapheneOS: mirror Lineage không CORS nên nạp file local (đối chiếu SHA256), và zip ROM vẫn sideload qua recovery — không khóa bootloader."
+      lede="Bám mô hình grapheneos.org/install/web: WebUSB unlock + flash recovery, rồi auto sideload zip (chờ bạn Format data / Apply from ADB trên máy). Không khóa bootloader. Mirror Lineage không CORS nên nạp file local + SHA256."
       officialHref={sources.lineageInstall}
       officialLabel="Wiki LineageOS cheetah"
       extraActions={
