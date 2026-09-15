@@ -13,6 +13,7 @@ import {
   planFileIngest,
   snapshotSelectedFiles,
 } from "./files";
+import { findReleaseFile, isSafeLineageFilename } from "./proxy";
 
 describe("normalizeDownloadName", () => {
   it("strips Chrome/Windows (N) suffixes", () => {
@@ -127,5 +128,30 @@ describe("parseCheetahBuilds", () => {
     assert.equal(release.version, "23.2");
     assert.equal(release.images["boot.img"]?.filename, "boot.img");
     assert.match(release.rom.filename, /^lineage-.*-cheetah-signed\.zip$/);
+  });
+});
+
+describe("proxy filename allowlist", () => {
+  it("accepts release names and rejects path tricks", () => {
+    assert.equal(isSafeLineageFilename("boot.img"), true);
+    assert.equal(
+      isSafeLineageFilename("lineage-23.2-20260915-nightly-cheetah-signed.zip"),
+      true,
+    );
+    assert.equal(isSafeLineageFilename("../etc/passwd"), false);
+    assert.equal(isSafeLineageFilename("boot/img"), false);
+    assert.equal(isSafeLineageFilename(""), false);
+
+    const files = [
+      {
+        filename: "boot.img",
+        url: "https://example.test/boot.img",
+        sha256: "a".repeat(64),
+        size: 1,
+      },
+    ];
+    assert.equal(findReleaseFile(files, "boot.img")?.filename, "boot.img");
+    assert.equal(findReleaseFile(files, "../boot.img"), null);
+    assert.equal(findReleaseFile(files, "dtbo.img"), null);
   });
 });
