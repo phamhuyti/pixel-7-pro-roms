@@ -203,7 +203,8 @@ function StepCard({
 }
 
 export function LineageWebInstaller() {
-  const [usbOk] = useState(() => webUsbAvailable());
+  // null until mount so SSR HTML matches Chrome (navigator.usb is absent on the server).
+  const [usbOk, setUsbOk] = useState<boolean | null>(null);
   const [release, setRelease] = useState<ResolvedRelease | null>(null);
   const [releaseError, setReleaseError] = useState<string | null>(null);
   const [cached, setCached] = useState<Record<string, boolean>>({});
@@ -226,6 +227,10 @@ export function LineageWebInstaller() {
     ((value: false | { adb?: Adb }) => void) | null
   >(null);
   const restoreFastboot = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    setUsbOk(webUsbAvailable());
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -669,7 +674,7 @@ export function LineageWebInstaller() {
 
   return (
     <div className="space-y-2">
-      {!usbOk && (
+      {usbOk === false && (
         <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">
           Trình duyệt không hỗ trợ WebUSB. Dùng Chrome / Edge / Brave / Vanadium
           (không Firefox, không Incognito). Hoặc dùng script CLI{" "}

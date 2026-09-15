@@ -55,7 +55,7 @@ export function parseCheetahBuilds(builds: unknown): ResolvedRelease {
 }
 
 async function fetchBuildsJson(apiUrl: string): Promise<unknown> {
-  const resp = await fetch(apiUrl);
+  const resp = await fetch(apiUrl, { signal: AbortSignal.timeout(12_000) });
   if (!resp.ok) {
     throw new Error(`API LineageOS lỗi: ${resp.status} ${resp.statusText}`);
   }

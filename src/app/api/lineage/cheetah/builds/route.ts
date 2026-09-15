@@ -9,6 +9,7 @@ export async function GET() {
     const resp = await fetch(LINEAGE_BUILDS_API, {
       headers: { Accept: "application/json" },
       cache: "no-store",
+      signal: AbortSignal.timeout(12_000),
     });
     if (!resp.ok) {
       return NextResponse.json(
