@@ -5,7 +5,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import {
   fetchLatestCheetahReleaseWithFallback,
   requiredFilesOf,
-  verifyBlobSha256,
 } from "@/lib/lineage-web-install/api";
 import { BlobStore } from "@/lib/lineage-web-install/blob-store";
 import {
@@ -13,16 +12,19 @@ import {
   closeFastbootUsb,
   disarmFastbootAutoConnect,
   flashRecoveryImages,
-  missingFlashImages,
   rebootToRecovery,
   unlockBootloader,
   webUsbAvailable,
 } from "@/lib/lineage-web-install/fastboot";
 import {
-  assertBlobSize,
   planFileIngest,
   snapshotSelectedFiles,
 } from "@/lib/lineage-web-install/files";
+import {
+  loadVerifiedFlashImages,
+  loadVerifiedRomZip,
+  verifyReleaseBlob,
+} from "@/lib/lineage-web-install/flash-guard";
 import {
   connectAdbForSideload,
   rebootToBootloaderViaAdb,
@@ -33,7 +35,6 @@ import {
   LINEAGE_DEVICE,
   LINEAGE_DEVICE_NAME,
   LINEAGE_DOWNLOADS_PAGE,
-  type FlashImageName,
   type ResolvedRelease,
 } from "@/lib/lineage-web-install/types";
 import { cn } from "cn";
@@ -229,7 +230,10 @@ export function LineageWebInstaller() {
   const restoreFastboot = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    setUsbOk(webUsbAvailable());
+    const id = requestAnimationFrame(() => {
+      setUsbOk(webUsbAvailable());
+    });
+    return () => cancelAnimationFrame(id);
   }, []);
 
   useEffect(() => {
@@ -360,16 +364,10 @@ export function LineageWebInstaller() {
     let memoryOnly = false;
     let done = 0;
     for (const { file, meta } of matched) {
-      assertBlobSize(file, meta.size, file.name === meta.filename ? meta.filename : `${file.name} → ${meta.filename}`);
-      setLoadStatus({
-        text: `Đối chiếu SHA256 ${meta.filename}…`,
-        kind: "busy",
-        progress: done / matched.length,
-      });
-      await verifyBlobSha256(
+      await verifyReleaseBlob(
         file,
-        meta.sha256,
-        meta.filename,
+        meta,
+        file.name === meta.filename ? meta.filename : `${file.name} → ${meta.filename}`,
         (hashed, total) => {
           const fileFrac = total ? hashed / total : 1;
           setLoadStatus({
@@ -473,27 +471,14 @@ export function LineageWebInstaller() {
       if (!usbOk) throw new Error("Trình duyệt không hỗ trợ WebUSB.");
       if (!release) throw new Error("Chưa có metadata release.");
 
-      const blobs: Partial<Record<FlashImageName, Blob>> = {};
-      await store.init();
-      for (const name of FLASH_IMAGE_NAMES) {
-        const blob = await store.loadFile(name);
-        if (!blob) {
-          throw new Error(
-            `Chưa nạp ${name}. Tải từ link official rồi “Nạp file đã tải”.`,
-          );
-        }
-        // Re-verify against current release metadata
-        await verifyBlobSha256(blob, release.images[name].sha256, name);
-        blobs[name] = blob;
-      }
-      const miss = missingFlashImages(blobs);
-      if (miss.length) {
-        throw new Error(`Thiếu image: ${miss.join(", ")}`);
-      }
+      const blobs = await loadVerifiedFlashImages(
+        (name) => store.loadFile(name),
+        release,
+      );
 
       await flashRecoveryImages(
         device,
-        blobs as Record<FlashImageName, Blob>,
+        blobs,
         (text, progress) => setFlashStatus({ text, kind: "busy", progress }),
         waitReconnect,
       );
@@ -542,14 +527,7 @@ export function LineageWebInstaller() {
     runSafe(setSideloadStatus, async () => {
       if (!usbOk) throw new Error("Trình duyệt không hỗ trợ WebUSB.");
       if (!release) throw new Error("Chưa có metadata release.");
-      await store.init();
-      const rom = await store.loadFile(release.rom.filename);
-      if (!rom) {
-        throw new Error(
-          `Chưa nạp ${release.rom.filename}. Tải + nạp file ở bước 4.`,
-        );
-      }
-      await verifyBlobSha256(rom, release.rom.sha256, release.rom.filename);
+      const rom = await loadVerifiedRomZip((name) => store.loadFile(name), release);
 
       restoreFastboot.current?.();
       restoreFastboot.current = disarmFastbootAutoConnect(device);

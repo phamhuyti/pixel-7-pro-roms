@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start --port 43123",
     "lint": "eslint",
-    "test": "tsx --test src/lib/build-info.test.ts src/lib/lineage-web-install/files.test.ts"
+    "test": "tsx --test src/lib/build-info.test.ts src/lib/lineage-web-install/files.test.ts src/lib/lineage-web-install/flash-guard.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

@@ -5,6 +5,7 @@ import {
   FastbootError,
   setDebugLevel,
 } from "android-fastboot";
+import { assertProductCheetah } from "./flash-guard";
 import type { FlashImageName } from "./types";
 import { FLASH_IMAGE_NAMES } from "./types";
 
@@ -31,11 +32,7 @@ export async function assertCheetahUnlocked(
 ): Promise<{ product: string; unlocked: string }> {
   const product = (await device.getVariable("product")) ?? "";
   const unlocked = (await device.getVariable("unlocked")) ?? "";
-  if (product !== "cheetah") {
-    throw new Error(
-      `Máy báo product='${product}', không phải cheetah (Pixel 7 Pro). Dừng để tránh brick.`,
-    );
-  }
+  assertProductCheetah(product);
   if (unlocked.toLowerCase() !== "yes") {
     throw new Error(
       `Bootloader chưa unlock (unlocked=${unlocked}). Bấm Unlock trước, hoặc mở khóa theo guide catalog.`,
@@ -49,6 +46,8 @@ export async function unlockBootloader(
   onStatus: (msg: string) => void,
 ): Promise<string> {
   await ensureConnected(device, onStatus);
+  const product = (await device.getVariable("product")) ?? "";
+  assertProductCheetah(product);
   const unlocked = await device.getVariable("unlocked");
   if (unlocked === "yes") {
     return "Bootloader đã unlock sẵn.";
