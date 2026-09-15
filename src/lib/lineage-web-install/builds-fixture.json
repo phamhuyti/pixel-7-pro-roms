@@ -1,0 +1,39 @@
+[
+  {
+    "date": "2026-09-15",
+    "version": "23.2",
+    "type": "nightly",
+    "files": [
+      {
+        "filename": "lineage-23.2-20260915-nightly-cheetah-signed.zip",
+        "url": "https://mirrorbits.lineageos.org/full/cheetah/20260915/lineage-23.2-20260915-nightly-cheetah-signed.zip",
+        "sha256": "ba7d51ed8cb7dee338086f2d87d6d3e213342ba59bd33b37d3c1d3865dc5be97",
+        "size": 1437116225
+      },
+      {
+        "filename": "boot.img",
+        "url": "https://mirrorbits.lineageos.org/full/cheetah/20260915/boot.img",
+        "sha256": "736a9a79300686635b1f6e93a704ab6662caa71fe6f1f407f680b262896de15b",
+        "size": 67108864
+      },
+      {
+        "filename": "dtbo.img",
+        "url": "https://mirrorbits.lineageos.org/full/cheetah/20260915/dtbo.img",
+        "sha256": "610c5deae693b82495e77239af96af1657bcda149cca5056f704a43ad93cc4fe",
+        "size": 16777216
+      },
+      {
+        "filename": "vendor_kernel_boot.img",
+        "url": "https://mirrorbits.lineageos.org/full/cheetah/20260915/vendor_kernel_boot.img",
+        "sha256": "e8be58b11d40424d61e2cd773f75fe42f282b7b3aa3f1417b7e598fb4b80e1dc",
+        "size": 67108864
+      },
+      {
+        "filename": "vendor_boot.img",
+        "url": "https://mirrorbits.lineageos.org/full/cheetah/20260915/vendor_boot.img",
+        "sha256": "dc87778cb6e72ecf6cea6bf846b87cedaba4b6776833274959b41293c9ba93d7",
+        "size": 67108864
+      }
+    ]
+  }
+]

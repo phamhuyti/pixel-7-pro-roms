@@ -1,9 +1,9 @@
 "use client";
 
 import { CommandBlock } from "@/components/command-block";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
-  fetchLatestCheetahRelease,
+  fetchLatestCheetahReleaseWithFallback,
   requiredFilesOf,
   verifyBlobSha256,
 } from "@/lib/lineage-web-install/api";
@@ -19,6 +19,11 @@ import {
   webUsbAvailable,
 } from "@/lib/lineage-web-install/fastboot";
 import {
+  assertBlobSize,
+  planFileIngest,
+  snapshotSelectedFiles,
+} from "@/lib/lineage-web-install/files";
+import {
   connectAdbForSideload,
   rebootToBootloaderViaAdb,
   sideloadZip,
@@ -27,14 +32,17 @@ import {
   FLASH_IMAGE_NAMES,
   LINEAGE_DEVICE,
   LINEAGE_DEVICE_NAME,
+  LINEAGE_DOWNLOADS_PAGE,
   type FlashImageName,
   type ResolvedRelease,
 } from "@/lib/lineage-web-install/types";
+import { cn } from "cn";
 import {
   useEffect,
   useRef,
   useState,
   type ChangeEvent,
+  type DragEvent,
   type ReactNode,
 } from "react";
 import type { Adb } from "@yume-chan/adb";
@@ -209,11 +217,11 @@ export function LineageWebInstaller() {
   const [sideloadStatus, setSideloadStatus] = useState<StepStatus>(emptyStatus);
   const [prompt, setPrompt] = useState<SideloadPrompt | null>(null);
   const [gappsFile, setGappsFile] = useState<File | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const [device] = useState(() => new FastbootDevice());
   const [store] = useState(() => new BlobStore());
   const reconnectResolver = useRef<(() => void) | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const promptResolver = useRef<
     ((value: false | { adb?: Adb }) => void) | null
   >(null);
@@ -223,7 +231,7 @@ export function LineageWebInstaller() {
     let cancelled = false;
     (async () => {
       try {
-        const latest = await fetchLatestCheetahRelease();
+        const latest = await fetchLatestCheetahReleaseWithFallback();
         if (cancelled) return;
         setRelease(latest);
         await store.init();
@@ -314,36 +322,60 @@ export function LineageWebInstaller() {
     });
 
   const handleOpenDownloads = () => {
-    if (!release) return;
-    for (const f of requiredFilesOf(release)) {
-      window.open(f.url, "_blank", "noopener,noreferrer");
-    }
+    window.open(LINEAGE_DOWNLOADS_PAGE, "_blank", "noopener,noreferrer");
     setLoadStatus({
-      text: "Đã mở link tải official. Sau khi tải xong, bấm “Nạp file đã tải” và chọn đủ 5 file cùng build.",
+      text:
+        "Đã mở trang tải official (một tab). Tải đủ 5 file cùng nightly hiện trên trang này, rồi kéo thả hoặc bấm Nạp file. " +
+        "Trình duyệt thường chặn mở 5 tab tải cùng lúc.",
       kind: "ok",
     });
   };
 
-  const ingestFiles = async (fileList: FileList | File[]) => {
+  const ingestFiles = async (files: File[]) => {
     if (!release) throw new Error("Chưa lấy được metadata build.");
-    const files = [...fileList];
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      setLoadStatus({ text: "Không có file nào được chọn.", kind: "error" });
+      return;
+    }
 
-    const byName = new Map(files.map((f) => [f.name, f]));
     const needed = requiredFilesOf(release);
-    let done = 0;
+    const { matched, unmatched } = planFileIngest(files, needed);
+    if (matched.length === 0) {
+      setLoadStatus({
+        text:
+          `Không khớp file nào với nightly ${release.date}. ` +
+          `Cần: ${needed.map((f) => f.filename).join(", ")}. ` +
+          `Đã chọn: ${files.map((f) => f.name).join(", ")}.`,
+        kind: "error",
+      });
+      return;
+    }
 
     await store.init();
-    for (const meta of needed) {
-      const file = byName.get(meta.filename);
-      if (!file) continue;
+    let memoryOnly = false;
+    let done = 0;
+    for (const { file, meta } of matched) {
+      assertBlobSize(file, meta.size, file.name === meta.filename ? meta.filename : `${file.name} → ${meta.filename}`);
       setLoadStatus({
         text: `Đối chiếu SHA256 ${meta.filename}…`,
         kind: "busy",
-        progress: done / needed.length,
+        progress: done / matched.length,
       });
-      await verifyBlobSha256(file, meta.sha256, meta.filename);
-      await store.saveFile(meta.filename, file);
+      await verifyBlobSha256(
+        file,
+        meta.sha256,
+        meta.filename,
+        (hashed, total) => {
+          const fileFrac = total ? hashed / total : 1;
+          setLoadStatus({
+            text: `Đối chiếu SHA256 ${meta.filename}… ${formatBytes(hashed)} / ${formatBytes(total)}`,
+            kind: "busy",
+            progress: (done + fileFrac) / matched.length,
+          });
+        },
+      );
+      const persisted = await store.saveFile(meta.filename, file);
+      if (!persisted) memoryOnly = true;
       done += 1;
     }
 
@@ -354,32 +386,40 @@ export function LineageWebInstaller() {
       if (!(await store.hasFile(f.filename))) stillMissing.push(f.filename);
     }
 
+    const extra =
+      unmatched.length > 0
+        ? ` Bỏ qua (tên không khớp): ${unmatched.join(", ")}.`
+        : "";
+    const persistNote = memoryOnly
+      ? " Cache IndexedDB đầy — file chỉ giữ trong tab này, đừng reload."
+      : "";
+
     if (stillMissing.length > 0) {
       setLoadStatus({
-        text: `Đã nạp một phần. Còn thiếu: ${stillMissing.join(", ")}. Chọn lại đủ file cùng build ${release.date}.`,
+        text:
+          `Đã nạp một phần. Còn thiếu: ${stillMissing.join(", ")}. ` +
+          `Chọn tiếp file còn thiếu cùng build ${release.date}.${extra}${persistNote}`,
         kind: "error",
       });
       return;
     }
 
     setLoadStatus({
-      text: `Đã nạp và xác minh SHA256 đủ file cho LineageOS ${release.version} (${release.date}).`,
+      text:
+        `Đã nạp và xác minh SHA256 đủ file cho LineageOS ${release.version} (${release.date}).` +
+        extra +
+        persistNote,
       kind: "ok",
       progress: 1,
     });
   };
 
-  const handleLoadFiles = () => {
-    fileInputRef.current?.click();
-  };
-
-  const onFileInput = async (e: ChangeEvent<HTMLInputElement>) => {
-    const list = e.target.files;
-    e.target.value = "";
-    if (!list?.length) return;
+  const ingestFromFiles = async (fileList: FileList | File[]) => {
+    const files = snapshotSelectedFiles(fileList);
+    if (files.length === 0) return;
     setBusy(true);
     try {
-      await ingestFiles(list);
+      await ingestFiles(files);
     } catch (error) {
       setLoadStatus({
         text: `Lỗi: ${error instanceof Error ? error.message : String(error)}`,
@@ -388,6 +428,20 @@ export function LineageWebInstaller() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const onFileInput = (e: ChangeEvent<HTMLInputElement>) => {
+    // Copy File objects BEFORE clearing value. Chrome FileList is live.
+    const files = snapshotSelectedFiles(e.target.files);
+    e.target.value = "";
+    void ingestFromFiles(files);
+  };
+
+  const onDropFiles = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (busy || !release) return;
+    void ingestFromFiles(e.dataTransfer.files);
   };
 
   const waitReconnect = () =>
@@ -487,7 +541,7 @@ export function LineageWebInstaller() {
       const rom = await store.loadFile(release.rom.filename);
       if (!rom) {
         throw new Error(
-          `Chưa nạp ${release.rom.filename}. Tải + nạp file ở bước 3.`,
+          `Chưa nạp ${release.rom.filename}. Tải + nạp file ở bước 4.`,
         );
       }
       await verifyBlobSha256(rom, release.rom.sha256, release.rom.filename);
@@ -741,7 +795,10 @@ export function LineageWebInstaller() {
               <strong className="text-foreground">
                 LineageOS {release.version}
               </strong>{" "}
-              ({release.date}) — ~{formatBytes(release.rom.size)}.
+              ({release.date}) — ~{formatBytes(release.rom.size)}. Mirror không
+              CORS nên tải file local rồi nạp vào đây (đối chiếu SHA256). Có thể
+              nạp từng file hoặc cả 5 file; tên{" "}
+              <code className="text-foreground">boot (1).img</code> vẫn nhận.
             </p>
             <ul className="space-y-1 font-mono text-xs text-foreground/90">
               {requiredFilesOf(release).map((f) => (
@@ -775,23 +832,43 @@ export function LineageWebInstaller() {
             disabled={!release || busy}
             onClick={handleOpenDownloads}
           >
-            Mở link tải (5 file)
+            Mở trang tải official
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!release || busy}
-            onClick={handleLoadFiles}
+        </div>
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (!busy && release) setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDropFiles}
+          className={
+            dragOver
+              ? "rounded-lg border border-teal-400 bg-teal-500/10 px-3 py-4"
+              : "rounded-lg border border-dashed border-border px-3 py-4"
+          }
+        >
+          <p className="text-xs">
+            Kéo thả 5 file đã tải vào đây, hoặc chọn từ ổ đĩa. Zip ROM ~1.4 GiB —
+            SHA256 chạy theo luồng, đợi thanh tiến trình.
+          </p>
+          <label
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "mt-3 cursor-pointer",
+              (!release || busy) && "pointer-events-none opacity-50",
+            )}
           >
+            <input
+              type="file"
+              multiple
+              accept=".img,.zip,application/zip,application/octet-stream"
+              className="sr-only"
+              disabled={!release || busy}
+              onChange={onFileInput}
+            />
             Nạp file đã tải
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            className="hidden"
-            onChange={(e) => void onFileInput(e)}
-          />
+          </label>
         </div>
         <StatusBlock id="load" status={loadStatus} />
         <p className="text-xs">
@@ -1002,7 +1079,7 @@ export function LineageWebInstaller() {
         )}
         <StatusBlock id="sideload" status={sideloadStatus} />
         <p className="text-xs">
-          Cần zip ROM đã nạp ở bước 3. Wiki: adb dừng ~47% vẫn có thể thành công —
+          Cần zip ROM đã nạp ở bước 4. Wiki: adb dừng ~47% vẫn có thể thành công —
           đọc chữ trên recovery.
         </p>
       </StepCard>

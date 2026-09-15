@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   agentRules: false,
   output: "standalone",
   transpilePackages: [
+    "@noble/hashes",
     "android-fastboot",
     "@yume-chan/adb",
     "@yume-chan/adb-daemon-webusb",
