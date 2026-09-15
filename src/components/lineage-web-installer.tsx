@@ -1,5 +1,6 @@
 "use client";
 
+import { CommandBlock } from "@/components/command-block";
 import { Button } from "@/components/ui/button";
 import {
   fetchLatestCheetahRelease,
@@ -129,6 +130,43 @@ function PromptCard({
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+type PlanItem = {
+  who: "auto" | "you";
+  command: string;
+  detail: string;
+};
+
+function CommandPlan({ items }: { items: PlanItem[] }) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-border bg-card/60">
+      <p className="border-b border-border bg-muted/50 px-3 py-1.5 font-mono text-[11px] tracking-wide text-teal-300 uppercase">
+        Lệnh sẽ chạy
+      </p>
+      <ol className="divide-y divide-border">
+        {items.map((item) => (
+          <li key={`${item.who}:${item.command}`} className="px-3 py-2.5">
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span
+                className={
+                  item.who === "auto"
+                    ? "rounded bg-teal-500/15 px-1.5 py-0.5 font-mono text-[10px] tracking-wide text-teal-300 uppercase"
+                    : "rounded bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] tracking-wide text-amber-300 uppercase"
+                }
+              >
+                {item.who === "auto" ? "Installer" : "Trên máy"}
+              </span>
+              <code className="font-mono text-[13px] break-all text-foreground">
+                {item.command}
+              </code>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed">{item.detail}</p>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
@@ -556,6 +594,8 @@ export function LineageWebInstaller() {
   const imagesReady =
     !!release && FLASH_IMAGE_NAMES.every((n) => cached[n]);
   const romReady = !!release && !!cached[release.rom.filename];
+  const romZip = release?.rom.filename ?? "lineage-*-cheetah-signed.zip";
+  const gappsZip = gappsFile?.name ?? "MindTheGapps-arm64-*.zip";
 
   return (
     <div className="space-y-2">
@@ -601,6 +641,28 @@ export function LineageWebInstaller() {
           Nếu đã unlock sẵn, bước này báo “đã unlock”. Lệnh wipe dữ liệu — xác nhận
           trên máy.
         </p>
+        <CommandPlan
+          items={[
+            {
+              who: "auto",
+              command: "fastboot getvar unlocked",
+              detail:
+                "Đọc biến bootloader. Nếu already yes thì bỏ qua lệnh unlock.",
+            },
+            {
+              who: "auto",
+              command: "fastboot flashing unlock",
+              detail:
+                "Chỉ gửi khi máy còn khóa. Tương đương GrapheneOS “Unlock bootloader”.",
+            },
+            {
+              who: "you",
+              command: "UNLOCK THE BOOTLOADER",
+              detail:
+                "Volume chọn, nguồn xác nhận. Installer không bấm giúp — máy tự wipe.",
+            },
+          ]}
+        />
         <Button
           type="button"
           disabled={!usbOk || busy}
@@ -693,6 +755,45 @@ export function LineageWebInstaller() {
           <code className="text-foreground">vendor_boot</code>. Zip ROM Lineage
           không phải factory image — phải sideload qua recovery (bước 5).
         </p>
+        <CommandPlan
+          items={[
+            {
+              who: "auto",
+              command: "fastboot flash boot boot.img",
+              detail: "Wiki cheetah: phân vùng phụ trước recovery.",
+            },
+            {
+              who: "auto",
+              command: "fastboot flash dtbo dtbo.img",
+              detail: "Device tree overlay cùng nightly.",
+            },
+            {
+              who: "auto",
+              command: "fastboot flash vendor_kernel_boot vendor_kernel_boot.img",
+              detail: "Kernel vendor boot Tensor (Pixel 7 Pro).",
+            },
+            {
+              who: "auto",
+              command: "fastboot reboot bootloader",
+              detail:
+                "Reboot Fastboot giữa chừng (như GrapheneOS). Có thể phải bấm Kết nối lại WebUSB.",
+            },
+            {
+              who: "auto",
+              command: "fastboot flash vendor_boot vendor_boot.img",
+              detail: "Lineage Recovery. Sau đó sang bước 5 — chưa sideload zip.",
+            },
+          ]}
+        />
+        <CommandBlock
+          commands={[
+            "fastboot flash boot boot.img",
+            "fastboot flash dtbo dtbo.img",
+            "fastboot flash vendor_kernel_boot vendor_kernel_boot.img",
+            "fastboot reboot bootloader",
+            "fastboot flash vendor_boot vendor_boot.img",
+          ]}
+        />
         <Button
           type="button"
           disabled={!usbOk || busy || !imagesReady}
@@ -715,6 +816,84 @@ export function LineageWebInstaller() {
           trên máy (giống script CLI). Zip ROM gửi bằng WebUSB ADB, không cần
           platform-tools.
         </p>
+        <CommandPlan
+          items={[
+            {
+              who: "auto",
+              command: "fastboot reboot recovery",
+              detail:
+                "Nếu máy còn ở Fastboot sau bước 4. Không được thì chọn Recovery bằng volume + nguồn.",
+            },
+            {
+              who: "you",
+              command: "Logo Lineage Recovery",
+              detail:
+                "Installer dừng, chờ bạn xác nhận đã thấy logo. Không có logo = flash lại bước 4.",
+            },
+            {
+              who: "you",
+              command: "Factory reset → Format data / factory reset",
+              detail:
+                "Xóa mã hóa + dữ liệu. Recovery không có lệnh WebUSB cho bước này — phải bấm trên máy, rồi xác nhận trên trang.",
+            },
+            {
+              who: "you",
+              command: "Apply update → Apply from ADB",
+              detail:
+                "Màn hình chờ sideload. Tắt adb trên máy tính (`adb kill-server`) để WebUSB nhận USB.",
+            },
+            {
+              who: "auto",
+              command: `adb -d sideload ${romZip}`,
+              detail:
+                "Gửi zip ROM qua protocol sideload-host (WebUSB ADB). Wiki: dừng ~47% vẫn có thể OK — đọc recovery.",
+            },
+            ...(gappsFile
+              ? [
+                  {
+                    who: "you" as const,
+                    command: "Reboot recovery (add-on) → Apply from ADB",
+                    detail:
+                      "Khi recovery hỏi cài add-on: Yes. Signature verification failed với GApps → Yes.",
+                  },
+                  {
+                    who: "auto" as const,
+                    command: `adb -d sideload ${gappsZip}`,
+                    detail: `Sideload ${gappsZip} trước lần boot hệ thống đầu.`,
+                  },
+                ]
+              : [
+                  {
+                    who: "auto" as const,
+                    command: "# không sideload GApps",
+                    detail:
+                      "Chưa nạp zip GApps → vanilla. Có thể nạp MindTheGapps arm64 phía trên trước khi bấm auto.",
+                  },
+                ]),
+            {
+              who: "you",
+              command: "Back → Reboot system now",
+              detail: "Không chạy `fastboot flashing lock`. Boot đầu thường dưới 15 phút.",
+            },
+          ]}
+        />
+        <CommandBlock
+          commands={
+            gappsFile
+              ? [
+                  "fastboot reboot recovery",
+                  `# trên recovery: Format data, rồi Apply from ADB`,
+                  `adb -d sideload ${romZip}`,
+                  `# recovery: reboot recovery cho add-on, Apply from ADB, Yes nếu signature fail`,
+                  `adb -d sideload ${gappsZip}`,
+                ]
+              : [
+                  "fastboot reboot recovery",
+                  `# trên recovery: Format data, rồi Apply from ADB`,
+                  `adb -d sideload ${romZip}`,
+                ]
+          }
+        />
         <p>
           Tùy chọn GApps (trước boot đầu): nạp zip MindTheGapps arm64. Bỏ trống =
           vanilla.
