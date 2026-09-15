@@ -4,6 +4,7 @@ import {
   FLASH_IMAGE_NAMES,
   LINEAGE_BUILDS_API,
   LINEAGE_BUILDS_API_PROXY,
+  lineageFileProxyPath,
   type FlashImageName,
   type LineageBuild,
   type LineageBuildFile,
@@ -142,4 +143,60 @@ export async function verifyBlobSha256(
         "Sai bản nightly hoặc file hỏng — tải lại đúng file trên trang này.",
     );
   }
+}
+
+export type DownloadProgress = (received: number, total: number) => void;
+
+/**
+ * Download one release file via the same-origin proxy (CORS bypass), with
+ * byte progress for the UI. Prefer this over opening mirrorbits in a tab.
+ */
+export async function downloadReleaseFileViaProxy(
+  file: LineageBuildFile,
+  onProgress?: DownloadProgress,
+  signal?: AbortSignal,
+): Promise<Blob> {
+  const resp = await fetch(lineageFileProxyPath(file.filename), {
+    cache: "no-store",
+    signal,
+  });
+  if (!resp.ok) {
+    let detail = `${resp.status} ${resp.statusText}`;
+    try {
+      const body = (await resp.json()) as { error?: string };
+      if (body.error) detail = body.error;
+    } catch {
+      // non-JSON error body
+    }
+    throw new Error(`Tải ${file.filename} thất bại: ${detail}`);
+  }
+
+  const totalHeader = Number(resp.headers.get("Content-Length"));
+  const total =
+    Number.isFinite(totalHeader) && totalHeader > 0 ? totalHeader : file.size;
+
+  if (!resp.body || typeof resp.body.getReader !== "function") {
+    const blob = await resp.blob();
+    onProgress?.(blob.size, total || blob.size);
+    return blob;
+  }
+
+  const reader = resp.body.getReader();
+  const chunks: BlobPart[] = [];
+  let received = 0;
+  let lastYield = 0;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    if (!value) continue;
+    chunks.push(value);
+    received += value.byteLength;
+    onProgress?.(received, total);
+    const now = Date.now();
+    if (now - lastYield > 80) {
+      lastYield = now;
+      await new Promise((r) => setTimeout(r, 0));
+    }
+  }
+  return new Blob(chunks, { type: "application/octet-stream" });
 }

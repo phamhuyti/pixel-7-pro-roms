@@ -6,6 +6,14 @@ export const LINEAGE_BUILDS_API =
 
 export const LINEAGE_BUILDS_API_PROXY = "/api/lineage/cheetah/builds" as const;
 
+/** Same-origin streaming proxy — mirror CDN has no CORS for the browser. */
+export const LINEAGE_FILE_PROXY_PREFIX =
+  "/api/lineage/cheetah/file" as const;
+
+export function lineageFileProxyPath(filename: string): string {
+  return `${LINEAGE_FILE_PROXY_PREFIX}/${encodeURIComponent(filename)}`;
+}
+
 export const LINEAGE_DOWNLOADS_PAGE =
   `https://download.lineageos.org/devices/${LINEAGE_DEVICE}/builds` as const;
 
