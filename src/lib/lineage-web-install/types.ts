@@ -4,6 +4,11 @@ export const LINEAGE_DEVICE_NAME = "Pixel 7 Pro";
 export const LINEAGE_BUILDS_API =
   `https://download.lineageos.org/api/v2/devices/${LINEAGE_DEVICE}/builds` as const;
 
+export const LINEAGE_BUILDS_API_PROXY = "/api/lineage/cheetah/builds" as const;
+
+export const LINEAGE_DOWNLOADS_PAGE =
+  `https://download.lineageos.org/devices/${LINEAGE_DEVICE}/builds` as const;
+
 /** Partition images required by the LineageOS cheetah wiki before recovery. */
 export const FLASH_IMAGE_NAMES = [
   "boot.img",

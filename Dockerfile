@@ -10,8 +10,17 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ARG GIT_SHA=
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
+# Stamp SHA + UTC time into the client bundle so the header mark changes every rebuild.
+RUN apk add --no-cache git \
+  && SHA="$GIT_SHA" \
+  && if [ -z "$SHA" ] && [ -d .git ]; then SHA="$(git rev-parse --short HEAD)"; fi \
+  && if [ -z "$SHA" ]; then SHA=docker; fi \
+  && export NEXT_PUBLIC_BUILD_SHA="$SHA" \
+  && export NEXT_PUBLIC_BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  && echo "web build mark $NEXT_PUBLIC_BUILD_SHA $NEXT_PUBLIC_BUILD_TIME" \
+  && npm run build
 
 FROM base AS runner
 WORKDIR /app
