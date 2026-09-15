@@ -21,7 +21,7 @@ Cài ROM: `/{máy}/cai-dat` — unlock, flash, chuyển từ custom ROM, Magisk/
 
 Hai cách, cùng ý GrapheneOS web installer / CLI:
 
-1. **Web installer (WebUSB)** — [`/pixel-7-pro/cai-dat/lineageos/web`](src/app/[device]/cai-dat/lineageos/web/page.tsx): unlock + nạp nightly (SHA256) + flash recovery images trong trình duyệt. Mirror Lineage không CORS nên tải qua link official rồi nạp file; zip ROM sideload bằng `adb` sau Format data.
+1. **Web installer (WebUSB)** — [`/pixel-7-pro/cai-dat/lineageos/web`](src/app/[device]/cai-dat/lineageos/web/page.tsx): `adb reboot bootloader` → unlock + nạp nightly (SHA256) + flash recovery images, rồi auto sideload zip (chờ Format data / Apply from ADB trên recovery). Mirror Lineage không CORS nên tải qua link official rồi nạp file.
 2. **Script CLI** — bám [wiki cheetah](https://wiki.lineageos.org/devices/cheetah/install/): tự tải + SHA256 + flash + sideload. Format data / Apply from ADB chọn tay trên recovery.
 
 **Không** khóa bootloader.

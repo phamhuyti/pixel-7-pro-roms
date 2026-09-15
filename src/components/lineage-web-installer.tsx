@@ -1,5 +1,6 @@
 "use client";
 
+import { CommandBlock } from "@/components/command-block";
 import { Button } from "@/components/ui/button";
 import {
   fetchLatestCheetahRelease,
@@ -9,11 +10,19 @@ import {
 import { BlobStore } from "@/lib/lineage-web-install/blob-store";
 import {
   FastbootDevice,
+  closeFastbootUsb,
+  disarmFastbootAutoConnect,
   flashRecoveryImages,
   missingFlashImages,
+  rebootToRecovery,
   unlockBootloader,
   webUsbAvailable,
 } from "@/lib/lineage-web-install/fastboot";
+import {
+  connectAdbForSideload,
+  rebootToBootloaderViaAdb,
+  sideloadZip,
+} from "@/lib/lineage-web-install/sideload";
 import {
   FLASH_IMAGE_NAMES,
   LINEAGE_DEVICE,
@@ -28,6 +37,7 @@ import {
   type ChangeEvent,
   type ReactNode,
 } from "react";
+import type { Adb } from "@yume-chan/adb";
 
 type StatusKind = "idle" | "ok" | "error" | "busy";
 
@@ -89,6 +99,79 @@ function StatusBlock({
   );
 }
 
+type SideloadPrompt = {
+  title: string;
+  body: string;
+  confirmLabel: string;
+  cancelLabel?: string;
+  cancelIsSkip?: boolean;
+  connectAdb?: boolean;
+};
+
+function PromptCard({
+  prompt,
+  onConfirm,
+  onCancel,
+}: {
+  prompt: SideloadPrompt;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+      <p className="font-medium text-foreground">{prompt.title}</p>
+      <p className="mt-1 whitespace-pre-line">{prompt.body}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button type="button" onClick={onConfirm}>
+          {prompt.confirmLabel}
+        </Button>
+        {prompt.cancelLabel && (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            {prompt.cancelLabel}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+type PlanItem = {
+  who: "auto" | "you";
+  command: string;
+  detail: string;
+};
+
+function CommandPlan({ items }: { items: PlanItem[] }) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-border bg-card/60">
+      <p className="border-b border-border bg-muted/50 px-3 py-1.5 font-mono text-[11px] tracking-wide text-teal-300 uppercase">
+        Lệnh sẽ chạy
+      </p>
+      <ol className="divide-y divide-border">
+        {items.map((item) => (
+          <li key={`${item.who}:${item.command}`} className="px-3 py-2.5">
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span
+                className={
+                  item.who === "auto"
+                    ? "rounded bg-teal-500/15 px-1.5 py-0.5 font-mono text-[10px] tracking-wide text-teal-300 uppercase"
+                    : "rounded bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] tracking-wide text-amber-300 uppercase"
+                }
+              >
+                {item.who === "auto" ? "Installer" : "Trên máy"}
+              </span>
+              <code className="font-mono text-[13px] break-all text-foreground">
+                {item.command}
+              </code>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed">{item.detail}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 function StepCard({
   step,
   title,
@@ -119,14 +202,22 @@ export function LineageWebInstaller() {
   const [busy, setBusy] = useState(false);
   const [needReconnect, setNeedReconnect] = useState(false);
 
+  const [bootloaderStatus, setBootloaderStatus] = useState<StepStatus>(emptyStatus);
   const [unlockStatus, setUnlockStatus] = useState<StepStatus>(emptyStatus);
   const [loadStatus, setLoadStatus] = useState<StepStatus>(emptyStatus);
   const [flashStatus, setFlashStatus] = useState<StepStatus>(emptyStatus);
+  const [sideloadStatus, setSideloadStatus] = useState<StepStatus>(emptyStatus);
+  const [prompt, setPrompt] = useState<SideloadPrompt | null>(null);
+  const [gappsFile, setGappsFile] = useState<File | null>(null);
 
   const [device] = useState(() => new FastbootDevice());
   const [store] = useState(() => new BlobStore());
   const reconnectResolver = useRef<(() => void) | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const promptResolver = useRef<
+    ((value: false | { adb?: Adb }) => void) | null
+  >(null);
+  const restoreFastboot = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -199,6 +290,20 @@ export function LineageWebInstaller() {
       setBusy(false);
     }
   };
+
+  const handleRebootBootloader = () =>
+    runSafe(setBootloaderStatus, async () => {
+      if (!usbOk) throw new Error("Trình duyệt không hỗ trợ WebUSB.");
+      setBootloaderStatus({
+        text: "Chọn thiết bị ADB trên hộp WebUSB. Trên máy: cho phép USB debugging nếu hỏi.",
+        kind: "busy",
+      });
+      await rebootToBootloaderViaAdb();
+      return (
+        "Đã gửi adb reboot bootloader. Đợi Fastboot Mode (tam giác đỏ). " +
+        "Đừng bấm Start. Rồi sang bước Unlock."
+      );
+    });
 
   const handleUnlock = () =>
     runSafe(setUnlockStatus, async () => {
@@ -336,14 +441,177 @@ export function LineageWebInstaller() {
 
       return (
         "Đã flash boot/dtbo/vendor_kernel_boot/vendor_boot. " +
-        "Trên Fastboot chọn Recovery (logo Lineage). Format data → Apply from ADB → sideload zip ROM (và GApps nếu cần). " +
-        "Không khóa bootloader."
+        "Bước 5: Auto sideload — installer reboot recovery rồi chờ bạn Format data / Apply from ADB."
       );
+    });
+
+  const waitPrompt = (next: SideloadPrompt) =>
+    new Promise<false | { adb?: Adb }>((resolve) => {
+      promptResolver.current = resolve;
+      setPrompt(next);
+    });
+
+  const handlePromptCancel = () => {
+    setPrompt(null);
+    promptResolver.current?.(false);
+  };
+
+  const handlePromptConfirm = async () => {
+    if (!prompt) return;
+    if (prompt.connectAdb) {
+      try {
+        setSideloadStatus({
+          text: "Chọn thiết bị ADB (sideload) trên hộp WebUSB…",
+          kind: "busy",
+        });
+        const adb = await connectAdbForSideload();
+        setPrompt(null);
+        promptResolver.current?.({ adb });
+      } catch (error) {
+        setSideloadStatus({
+          text: `Lỗi: ${error instanceof Error ? error.message : String(error)}`,
+          kind: "error",
+        });
+      }
+      return;
+    }
+    setPrompt(null);
+    promptResolver.current?.({});
+  };
+
+  const handleSideload = () =>
+    runSafe(setSideloadStatus, async () => {
+      if (!usbOk) throw new Error("Trình duyệt không hỗ trợ WebUSB.");
+      if (!release) throw new Error("Chưa có metadata release.");
+      await store.init();
+      const rom = await store.loadFile(release.rom.filename);
+      if (!rom) {
+        throw new Error(
+          `Chưa nạp ${release.rom.filename}. Tải + nạp file ở bước 3.`,
+        );
+      }
+      await verifyBlobSha256(rom, release.rom.sha256, release.rom.filename);
+
+      restoreFastboot.current?.();
+      restoreFastboot.current = disarmFastbootAutoConnect(device);
+      let openAdb: Adb | null = null;
+
+      try {
+        if (device.isConnected) {
+          setSideloadStatus({
+            text: "Reboot vào Lineage Recovery…",
+            kind: "busy",
+          });
+          try {
+            await rebootToRecovery(device, (text) =>
+              setSideloadStatus({ text, kind: "busy" }),
+            );
+          } catch (error) {
+            setSideloadStatus({
+              text: `Không reboot recovery tự động (${error instanceof Error ? error.message : String(error)}). Chọn Recovery trên Fastboot bằng volume + nguồn.`,
+              kind: "busy",
+            });
+          }
+          await closeFastbootUsb(device);
+        }
+
+        const inRecovery = await waitPrompt({
+          title: "Xác nhận Lineage Recovery",
+          body: "Phải thấy logo Lineage. Nếu vẫn Fastboot: Volume chọn Recovery, nguồn xác nhận. Nếu không có logo Lineage — dừng, flash lại bước 5.",
+          confirmLabel: "Đã thấy logo Lineage",
+          cancelLabel: "Hủy",
+        });
+        if (!inRecovery) throw new Error("Đã hủy.");
+
+        const formatted = await waitPrompt({
+          title: "Format data trên recovery",
+          body: "Factory reset → Format data / factory reset. Xóa mã hóa và dữ liệu nội bộ. Quay về menu chính. Chưa reboot hệ thống.",
+          confirmLabel: "Đã Format data, đang ở menu recovery",
+          cancelLabel: "Hủy",
+        });
+        if (!formatted) throw new Error("Đã hủy.");
+
+        const romConnect = await waitPrompt({
+          title: "Apply from ADB — sideload ROM",
+          body: "Apply update → Apply from ADB (màn hình chờ sideload).\nTắt adb trên máy tính nếu đang chạy: adb kill-server.\nBấm nút dưới sẽ mở hộp WebUSB rồi gửi zip ROM.",
+          confirmLabel: "Đã Apply from ADB — sideload ROM",
+          cancelLabel: "Hủy",
+          connectAdb: true,
+        });
+        if (!romConnect) throw new Error("Đã hủy.");
+        const romAdb = romConnect.adb;
+        if (!romAdb) throw new Error("Chưa kết nối ADB.");
+        openAdb = romAdb;
+
+        setSideloadStatus({
+          text: `Sideload ${release.rom.filename}…`,
+          kind: "busy",
+          progress: 0,
+        });
+        const romResult = await sideloadZip(romAdb, rom, (sent, total) => {
+          setSideloadStatus({
+            text: `Sideload ${release.rom.filename}… ${formatBytes(sent)} / ${formatBytes(total)}`,
+            kind: "busy",
+            progress: total ? sent / total : 0,
+          });
+        });
+        await Promise.resolve(romAdb.close()).catch(() => undefined);
+        openAdb = null;
+
+        if (gappsFile) {
+          const gappsConnect = await waitPrompt({
+            title: "Sideload GApps (add-on)",
+            body: `Recovery hỏi reboot recovery để cài add-on → Yes.\nApply update → Apply from ADB.\nSignature verification failed với ${gappsFile.name} là bình thường → Yes trên máy.`,
+            confirmLabel: "Đã Apply from ADB — sideload GApps",
+            cancelLabel: "Bỏ qua GApps",
+            cancelIsSkip: true,
+            connectAdb: true,
+          });
+          if (gappsConnect && gappsConnect.adb) {
+            const gappsAdb = gappsConnect.adb;
+            openAdb = gappsAdb;
+            setSideloadStatus({
+              text: `Sideload ${gappsFile.name}…`,
+              kind: "busy",
+              progress: 0,
+            });
+            await sideloadZip(gappsAdb, gappsFile, (sent, total) => {
+              setSideloadStatus({
+                text: `Sideload ${gappsFile.name}… ${formatBytes(sent)} / ${formatBytes(total)}`,
+                kind: "busy",
+                progress: total ? sent / total : 0,
+              });
+            });
+            await Promise.resolve(gappsAdb.close()).catch(() => undefined);
+            openAdb = null;
+          }
+        }
+
+        await waitPrompt({
+          title: "Reboot hệ thống",
+          body: "Back → Reboot system now. Boot đầu thường dưới 15 phút. Không chạy fastboot flashing lock.",
+          confirmLabel: "Đã hiểu",
+        });
+
+        return (
+          (romResult.note ? `${romResult.note} ` : "") +
+          `Sideload ${release.rom.filename} xong. Không khóa bootloader.`
+        );
+      } finally {
+        restoreFastboot.current?.();
+        restoreFastboot.current = null;
+        if (openAdb) {
+          await Promise.resolve(openAdb.close()).catch(() => undefined);
+        }
+        setPrompt(null);
+      }
     });
 
   const imagesReady =
     !!release && FLASH_IMAGE_NAMES.every((n) => cached[n]);
   const romReady = !!release && !!cached[release.rom.filename];
+  const romZip = release?.rom.filename ?? "lineage-*-cheetah-signed.zip";
+  const gappsZip = gappsFile?.name ?? "MindTheGapps-arm64-*.zip";
 
   return (
     <div className="space-y-2">
@@ -363,15 +631,16 @@ export function LineageWebInstaller() {
 
       <StepCard step={1} title="Điều kiện trước khi flash">
         <p>
-          Giống GrapheneOS web installer: máy ở{" "}
-          <strong className="text-foreground">Fastboot Mode</strong> (tam giác đỏ),
-          OEM unlocking đã bật, firmware stock{" "}
+          Giống GrapheneOS web installer: OEM unlocking đã bật, firmware stock{" "}
           <strong className="text-foreground">Android 16 mới nhất</strong>, đúng{" "}
           {LINEAGE_DEVICE_NAME} (<code className="text-foreground">{LINEAGE_DEVICE}</code>
-          ). Wiki Lineage không khóa bootloader sau khi cài.
+          ). Bước 2 dùng ADB để vào Fastboot. Wiki Lineage không khóa bootloader sau khi cài.
         </p>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Cáp data, cổng USB thẳng; Linux nên có gói udev Android.</li>
+          <li>
+            USB debugging bật (và xác nhận “Allow USB debugging” lần đầu). Cáp
+            data, cổng USB thẳng; Linux nên có gói udev Android.
+          </li>
           <li>
             Mirror LineageOS không cho trình duyệt tải trực tiếp (CORS) — khác
             releases.grapheneos.org — nên bước tải mở link official, rồi nạp file
@@ -384,11 +653,72 @@ export function LineageWebInstaller() {
         </ul>
       </StepCard>
 
-      <StepCard step={2} title="Unlock bootloader">
+      <StepCard step={2} title="Vào Fastboot bằng ADB">
+        <p>
+          Máy đang ở hệ thống (hoặc recovery có ADB). Wiki:{" "}
+          <code className="text-foreground">adb -d reboot bootloader</code>. Đã ở
+          Fastboot Mode thì bỏ qua bước này.
+        </p>
+        <CommandPlan
+          items={[
+            {
+              who: "you",
+              command: "USB debugging + Allow USB debugging",
+              detail:
+                "Tùy chọn nhà phát triển → gỡ lỗi USB. Lần đầu ADB: cho phép RSA trên máy. Tắt `adb kill-server` nếu adb CLI đang chiếm USB.",
+            },
+            {
+              who: "auto",
+              command: "adb -d reboot bootloader",
+              detail:
+                "WebUSB ADB gửi lệnh reboot vào Fastboot. Installer mở hộp chọn thiết bị khi bạn bấm nút.",
+            },
+            {
+              who: "you",
+              command: "Fastboot Mode (tam giác đỏ)",
+              detail:
+                "Đợi máy vào Fastboot. Đừng bấm Start. Rồi sang bước Unlock (WebUSB fastboot, khác ADB).",
+            },
+          ]}
+        />
+        <CommandBlock commands={["adb -d reboot bootloader"]} />
+        <Button
+          type="button"
+          disabled={!usbOk || busy}
+          onClick={() => void handleRebootBootloader().catch(() => undefined)}
+        >
+          adb reboot bootloader
+        </Button>
+        <StatusBlock id="bootloader" status={bootloaderStatus} />
+      </StepCard>
+
+      <StepCard step={3} title="Unlock bootloader">
         <p>
           Nếu đã unlock sẵn, bước này báo “đã unlock”. Lệnh wipe dữ liệu — xác nhận
           trên máy.
         </p>
+        <CommandPlan
+          items={[
+            {
+              who: "auto",
+              command: "fastboot getvar unlocked",
+              detail:
+                "Đọc biến bootloader. Nếu already yes thì bỏ qua lệnh unlock.",
+            },
+            {
+              who: "auto",
+              command: "fastboot flashing unlock",
+              detail:
+                "Chỉ gửi khi máy còn khóa. Tương đương GrapheneOS “Unlock bootloader”.",
+            },
+            {
+              who: "you",
+              command: "UNLOCK THE BOOTLOADER",
+              detail:
+                "Volume chọn, nguồn xác nhận. Installer không bấm giúp — máy tự wipe.",
+            },
+          ]}
+        />
         <Button
           type="button"
           disabled={!usbOk || busy}
@@ -399,7 +729,7 @@ export function LineageWebInstaller() {
         <StatusBlock id="unlock" status={unlockStatus} />
       </StepCard>
 
-      <StepCard step={3} title="Lấy bản LineageOS (nightly official)">
+      <StepCard step={4} title="Lấy bản LineageOS (nightly official)">
         {releaseError && (
           <p className="text-red-400">Không đọc API: {releaseError}</p>
         )}
@@ -467,11 +797,11 @@ export function LineageWebInstaller() {
         <p className="text-xs">
           Cache trình duyệt: {imagesReady ? "đủ 4 image" : "thiếu image"}
           {" · "}
-          {romReady ? "có zip ROM" : "chưa có zip ROM (cần cho sideload tay)"}
+          {romReady ? "có zip ROM (sideload auto)" : "chưa có zip ROM (cần cho sideload)"}
         </p>
       </StepCard>
 
-      <StepCard step={4} title="Flash recovery images (WebUSB)">
+      <StepCard step={5} title="Flash recovery images (WebUSB)">
         <p>
           Tương đương phần fastboot trên wiki / GrapheneOS “Flash release”, nhưng
           chỉ flash{" "}
@@ -479,8 +809,47 @@ export function LineageWebInstaller() {
           <code className="text-foreground">dtbo</code>,{" "}
           <code className="text-foreground">vendor_kernel_boot</code>,{" "}
           <code className="text-foreground">vendor_boot</code>. Zip ROM Lineage
-          không phải factory image — phải sideload qua recovery (bước 5).
+          không phải factory image — phải sideload qua recovery (bước 6).
         </p>
+        <CommandPlan
+          items={[
+            {
+              who: "auto",
+              command: "fastboot flash boot boot.img",
+              detail: "Wiki cheetah: phân vùng phụ trước recovery.",
+            },
+            {
+              who: "auto",
+              command: "fastboot flash dtbo dtbo.img",
+              detail: "Device tree overlay cùng nightly.",
+            },
+            {
+              who: "auto",
+              command: "fastboot flash vendor_kernel_boot vendor_kernel_boot.img",
+              detail: "Kernel vendor boot Tensor (Pixel 7 Pro).",
+            },
+            {
+              who: "auto",
+              command: "fastboot reboot bootloader",
+              detail:
+                "Reboot Fastboot giữa chừng (như GrapheneOS). Có thể phải bấm Kết nối lại WebUSB.",
+            },
+            {
+              who: "auto",
+              command: "fastboot flash vendor_boot vendor_boot.img",
+              detail: "Lineage Recovery. Sau đó sang bước 6 — chưa sideload zip.",
+            },
+          ]}
+        />
+        <CommandBlock
+          commands={[
+            "fastboot flash boot boot.img",
+            "fastboot flash dtbo dtbo.img",
+            "fastboot flash vendor_kernel_boot vendor_kernel_boot.img",
+            "fastboot reboot bootloader",
+            "fastboot flash vendor_boot vendor_boot.img",
+          ]}
+        />
         <Button
           type="button"
           disabled={!usbOk || busy || !imagesReady}
@@ -496,40 +865,145 @@ export function LineageWebInstaller() {
         />
       </StepCard>
 
-      <StepCard step={5} title="Format data + sideload ROM">
-        <ol className="list-decimal space-y-2 pl-5">
-          <li>
-            Fastboot → Recovery. Phải thấy logo Lineage; nếu không, flash lại bước
-            4.
-          </li>
-          <li>Factory reset → Format data / factory reset → về menu chính.</li>
-          <li>
-            Apply update → Apply from ADB, rồi trên máy tính:
-            <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-card p-3 font-mono text-xs text-foreground">
-              {release
-                ? `adb -d sideload ${release.rom.filename}`
-                : "adb -d sideload lineage-*-cheetah-signed.zip"}
-            </pre>
-          </li>
-          <li>
-            GApps (tuỳ chọn, trước boot đầu): recovery hỏi reboot recovery → Yes,
-            rồi{" "}
-            <code className="text-foreground">
-              adb -d sideload MindTheGapps-arm64-*.zip
-            </code>
-            .
-          </li>
-          <li>Back → Reboot system now. Không chạy `fastboot flashing lock`.</li>
-        </ol>
+      <StepCard step={6} title="Format data + sideload ROM">
         <p>
-          Muốn sideload cũng được script hoá:{" "}
-          <a
-            className="text-teal-300 hover:underline"
-            href="/tools/lineageos-cheetah-flash.sh"
+          Recovery không cho format/sideload từ fastboot — installer reboot recovery,
+          rồi <strong className="text-foreground">dừng chờ bạn</strong> làm đúng bước
+          trên máy (giống script CLI). Zip ROM gửi bằng WebUSB ADB, không cần
+          platform-tools.
+        </p>
+        <CommandPlan
+          items={[
+            {
+              who: "auto",
+              command: "fastboot reboot recovery",
+              detail:
+                "Nếu máy còn ở Fastboot sau bước 5. Không được thì chọn Recovery bằng volume + nguồn.",
+            },
+            {
+              who: "you",
+              command: "Logo Lineage Recovery",
+              detail:
+                "Installer dừng, chờ bạn xác nhận đã thấy logo. Không có logo = flash lại bước 5.",
+            },
+            {
+              who: "you",
+              command: "Factory reset → Format data / factory reset",
+              detail:
+                "Xóa mã hóa + dữ liệu. Recovery không có lệnh WebUSB cho bước này — phải bấm trên máy, rồi xác nhận trên trang.",
+            },
+            {
+              who: "you",
+              command: "Apply update → Apply from ADB",
+              detail:
+                "Màn hình chờ sideload. Tắt adb trên máy tính (`adb kill-server`) để WebUSB nhận USB.",
+            },
+            {
+              who: "auto",
+              command: `adb -d sideload ${romZip}`,
+              detail:
+                "Gửi zip ROM qua protocol sideload-host (WebUSB ADB). Wiki: dừng ~47% vẫn có thể OK — đọc recovery.",
+            },
+            ...(gappsFile
+              ? [
+                  {
+                    who: "you" as const,
+                    command: "Reboot recovery (add-on) → Apply from ADB",
+                    detail:
+                      "Khi recovery hỏi cài add-on: Yes. Signature verification failed với GApps → Yes.",
+                  },
+                  {
+                    who: "auto" as const,
+                    command: `adb -d sideload ${gappsZip}`,
+                    detail: `Sideload ${gappsZip} trước lần boot hệ thống đầu.`,
+                  },
+                ]
+              : [
+                  {
+                    who: "auto" as const,
+                    command: "# không sideload GApps",
+                    detail:
+                      "Chưa nạp zip GApps → vanilla. Có thể nạp MindTheGapps arm64 phía trên trước khi bấm auto.",
+                  },
+                ]),
+            {
+              who: "you",
+              command: "Back → Reboot system now",
+              detail: "Không chạy `fastboot flashing lock`. Boot đầu thường dưới 15 phút.",
+            },
+          ]}
+        />
+        <CommandBlock
+          commands={
+            gappsFile
+              ? [
+                  "fastboot reboot recovery",
+                  `# trên recovery: Format data, rồi Apply from ADB`,
+                  `adb -d sideload ${romZip}`,
+                  `# recovery: reboot recovery cho add-on, Apply from ADB, Yes nếu signature fail`,
+                  `adb -d sideload ${gappsZip}`,
+                ]
+              : [
+                  "fastboot reboot recovery",
+                  `# trên recovery: Format data, rồi Apply from ADB`,
+                  `adb -d sideload ${romZip}`,
+                ]
+          }
+        />
+        <p>
+          Tùy chọn GApps (trước boot đầu): nạp zip MindTheGapps arm64. Bỏ trống =
+          vanilla.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={() => document.getElementById("gapps-file")?.click()}
           >
-            lineageos-cheetah-flash.sh
-          </a>{" "}
-          (tải + flash + nhắc Format/Apply + sideload).
+            {gappsFile ? `GApps: ${gappsFile.name}` : "Nạp GApps (tuỳ chọn)"}
+          </Button>
+          {gappsFile && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={busy}
+              onClick={() => setGappsFile(null)}
+            >
+              Bỏ GApps
+            </Button>
+          )}
+          <input
+            id="gapps-file"
+            type="file"
+            accept=".zip,application/zip"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              e.target.value = "";
+              setGappsFile(file);
+            }}
+          />
+        </div>
+        <Button
+          type="button"
+          disabled={!usbOk || busy || !romReady}
+          onClick={() => void handleSideload().catch(() => undefined)}
+        >
+          Bắt đầu auto sideload
+        </Button>
+        {prompt && (
+          <PromptCard
+            prompt={prompt}
+            onConfirm={() => void handlePromptConfirm()}
+            onCancel={handlePromptCancel}
+          />
+        )}
+        <StatusBlock id="sideload" status={sideloadStatus} />
+        <p className="text-xs">
+          Cần zip ROM đã nạp ở bước 3. Wiki: adb dừng ~47% vẫn có thể thành công —
+          đọc chữ trên recovery.
         </p>
       </StepCard>
     </div>

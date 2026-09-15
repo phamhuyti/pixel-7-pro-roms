@@ -105,3 +105,40 @@ export function missingFlashImages(
 ): FlashImageName[] {
   return FLASH_IMAGE_NAMES.filter((n) => !blobs[n]);
 }
+
+type FastbootInternals = {
+  device: USBDevice | null;
+  _validateAndConnectDevice: () => Promise<void>;
+};
+
+/**
+ * `fastboot.js` luôn claim USB khi máy reconnect. Recovery dùng ADB (không
+ * phải fastboot) — nếu không gỡ auto-claim, WebUSB ADB sideload sẽ bị chiếm.
+ */
+export function disarmFastbootAutoConnect(device: FastbootDevice): () => void {
+  const internals = device as unknown as FastbootInternals;
+  const original = internals._validateAndConnectDevice.bind(device);
+  internals._validateAndConnectDevice = async () => undefined;
+  return () => {
+    internals._validateAndConnectDevice = original;
+  };
+}
+
+export async function closeFastbootUsb(device: FastbootDevice): Promise<void> {
+  const raw = (device as unknown as FastbootInternals).device;
+  if (!raw?.opened) return;
+  try {
+    await raw.close();
+  } catch {
+    /* máy có thể đã disconnect sau reboot recovery */
+  }
+}
+
+export async function rebootToRecovery(
+  device: FastbootDevice,
+  onStatus: (msg: string) => void,
+): Promise<void> {
+  await ensureConnected(device, onStatus);
+  onStatus("Gửi reboot recovery…");
+  await device.reboot("recovery", false);
+}
