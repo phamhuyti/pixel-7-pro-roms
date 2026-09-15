@@ -1,6 +1,5 @@
 import type { DeviceCatalog } from "../types";
 import { flashGuides } from "./flash";
-import { hotspot6ghzGuide } from "./hotspot-6ghz";
 import { defaultCompareSlugs } from "./recommend";
 import { roms } from "./roms";
 import { magiskDocLinks, rootGuides } from "./root";
@@ -25,7 +24,7 @@ export const pixelCatalog: DeviceCatalog = {
   wizardLede:
     "Không có ROM “tốt nhất”. Chọn một hoặc nhiều nhu cầu — trang này chỉ xếp các lựa chọn còn sống, kèm lý do.",
   installHubLede:
-    "Unlock một lần, rồi flash theo kênh official. Có mục chuyển từ custom ROM khác, Magisk (init_boot trên Tensor) và KernelSU khi kernel ROM hỗ trợ. Không hướng dẫn giả Play Integrity. ROM stale / đã ngừng không có bước flash — trừ khi wiki còn và được ghi rõ. Có thêm pipeline Lineage + hotspot 6GHz (VPNHotspot).",
+    "Unlock một lần, rồi flash theo kênh official. Có mục chuyển từ custom ROM khác, Magisk (init_boot trên Tensor) và KernelSU khi kernel ROM hỗ trợ. Không hướng dẫn giả Play Integrity. ROM stale / đã ngừng không có bước flash — trừ khi wiki còn và được ghi rõ.",
   unlockBlurb:
     "Bắt buộc với ROM recovery. GrapheneOS / CalyxOS / iodé installer có thể tự gửi lệnh unlock — vẫn phải bật OEM unlocking trước.",
   sourcesNote:
@@ -53,10 +52,6 @@ export const pixelCatalog: DeviceCatalog = {
       q: "Flash thế nào?",
       a: "Trang Cài đặt có unlock, flash, chuyển từ custom ROM, Magisk/KernelSU. Không giả Play Integrity.",
     },
-    {
-      q: "Hotspot 6GHz trên Lineage được không?",
-      a: "Phần cứng Wi‑Fi 6E có. Cần Magisk + VPNHotspot; nếu SoftAP vẫn khóa 6GHz thì set mã vùng Wi‑Fi (ưu tiên VN sau Thông tư 01/2025). Xem trang Lineage + hotspot 6GHz trong mục Cài đặt.",
-    },
   ],
   androidFilters: [
     { value: "all", label: "Mọi Android" },
@@ -73,7 +68,4 @@ export const pixelCatalog: DeviceCatalog = {
   switchOverview,
   rootGuides,
   magiskDocLinks: [...magiskDocLinks],
-  topicGuides: {
-    "hotspot-6ghz": hotspot6ghzGuide,
-  },
 };

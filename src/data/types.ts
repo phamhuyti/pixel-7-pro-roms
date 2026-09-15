@@ -122,30 +122,6 @@ export type UnlockGuide = {
   cannotUnlock: string[];
 };
 
-/** Hướng dẫn chủ đề (ví dụ 6GHz hotspot) — không phải flash một ROM. */
-export type TopicGuideSection = {
-  id: string;
-  title: string;
-  intro?: string;
-  bullets?: string[];
-  steps?: FlashStep[];
-  relatedHref?: string;
-  relatedLabel?: string;
-};
-
-export type TopicGuide = {
-  title: string;
-  summary: string;
-  officialHref: string;
-  officialLabel: string;
-  extraLinks?: RomLink[];
-  warnings: string[];
-  requirements: string[];
-  downloads?: FlashDownload[];
-  sections: TopicGuideSection[];
-  notes: string[];
-};
-
 export type Rom = {
   slug: string;
   name: string;
@@ -220,6 +196,4 @@ export type DeviceCatalog = {
   switchOverview: { summary: string; rules: string[] };
   rootGuides: Record<string, RootGuide>;
   magiskDocLinks: { label: string; href: string }[];
-  /** Hướng dẫn chủ đề chỉ có trên một số máy (vd. 6GHz SoftAP). */
-  topicGuides?: Record<string, TopicGuide>;
 };
