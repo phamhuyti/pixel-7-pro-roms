@@ -338,6 +338,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       "Nâng major (ví dụ 22 → 23) phải sideload tay; updater app không làm giúp.",
       "Cập nhật nightly: recovery + sideload hoặc updater, đọc wiki update.",
       "Device integrity trên wiki là quirk đã biết. Banking/Wallet không phải thế mạnh.",
+      "Cần SoftAP 6GHz: xem trang Cài đặt → LineageOS + root + hotspot 6GHz (VPNHotspot + mã vùng).",
     ],
   },
 
