@@ -297,7 +297,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       },
       {
         title: "Cách khuyến nghị: Web installer (như GrapheneOS)",
-        body: "Mở trang Web installer LineageOS trên catalog này. Chrome/Edge + máy ở Fastboot. Unlock (nếu cần) → nạp nightly + SHA256 → Flash recovery images → Auto sideload (installer reboot recovery, chờ bạn Format data / Apply from ADB, rồi gửi zip qua WebUSB ADB).",
+        body: "Mở trang Web installer LineageOS trên catalog này. Chrome/Edge: USB debugging → adb reboot bootloader → Unlock (nếu cần) → nạp nightly + SHA256 → Flash recovery images → Auto sideload (chờ Format data / Apply from ADB, rồi gửi zip qua WebUSB ADB).",
         note: "Khác GrapheneOS: không flash hết OS trong một factory zip, và không khóa bootloader.",
       },
       {

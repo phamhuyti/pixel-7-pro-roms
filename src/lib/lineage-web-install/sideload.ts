@@ -74,7 +74,7 @@ class ByteQueue {
   }
 }
 
-export async function connectAdbForSideload(): Promise<Adb> {
+export async function connectAdb(purpose = "ADB"): Promise<Adb> {
   const manager = AdbDaemonWebUsbDeviceManager.BROWSER;
   if (!manager) {
     throw new Error("Trình duyệt không hỗ trợ WebUSB ADB.");
@@ -104,12 +104,34 @@ export async function connectAdbForSideload(): Promise<Adb> {
   const adb = new Adb(transport);
   const id = adb.banner.device ?? adb.banner.product;
   if (id && id !== "cheetah") {
-    await adb.close().catch(() => undefined);
+    try {
+      await adb.close();
+    } catch {
+      /* ignore */
+    }
     throw new Error(
-      `ADB báo máy '${id}', không phải cheetah. Dừng sideload.`,
+      `ADB báo máy '${id}', không phải cheetah. Dừng ${purpose}.`,
     );
   }
   return adb;
+}
+
+export function connectAdbForSideload(): Promise<Adb> {
+  return connectAdb("sideload");
+}
+
+/** Wiki: `adb -d reboot bootloader` — máy đang ở hệ thống, USB debugging bật. */
+export async function rebootToBootloaderViaAdb(): Promise<void> {
+  const adb = await connectAdb("reboot bootloader");
+  try {
+    await adb.power.bootloader();
+  } finally {
+    try {
+      await adb.close();
+    } catch {
+      /* reboot cắt USB — đóng kết nối có thể fail */
+    }
+  }
 }
 
 /**

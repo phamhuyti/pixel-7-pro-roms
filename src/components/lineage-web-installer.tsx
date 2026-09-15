@@ -20,6 +20,7 @@ import {
 } from "@/lib/lineage-web-install/fastboot";
 import {
   connectAdbForSideload,
+  rebootToBootloaderViaAdb,
   sideloadZip,
 } from "@/lib/lineage-web-install/sideload";
 import {
@@ -201,6 +202,7 @@ export function LineageWebInstaller() {
   const [busy, setBusy] = useState(false);
   const [needReconnect, setNeedReconnect] = useState(false);
 
+  const [bootloaderStatus, setBootloaderStatus] = useState<StepStatus>(emptyStatus);
   const [unlockStatus, setUnlockStatus] = useState<StepStatus>(emptyStatus);
   const [loadStatus, setLoadStatus] = useState<StepStatus>(emptyStatus);
   const [flashStatus, setFlashStatus] = useState<StepStatus>(emptyStatus);
@@ -288,6 +290,20 @@ export function LineageWebInstaller() {
       setBusy(false);
     }
   };
+
+  const handleRebootBootloader = () =>
+    runSafe(setBootloaderStatus, async () => {
+      if (!usbOk) throw new Error("Trình duyệt không hỗ trợ WebUSB.");
+      setBootloaderStatus({
+        text: "Chọn thiết bị ADB trên hộp WebUSB. Trên máy: cho phép USB debugging nếu hỏi.",
+        kind: "busy",
+      });
+      await rebootToBootloaderViaAdb();
+      return (
+        "Đã gửi adb reboot bootloader. Đợi Fastboot Mode (tam giác đỏ). " +
+        "Đừng bấm Start. Rồi sang bước Unlock."
+      );
+    });
 
   const handleUnlock = () =>
     runSafe(setUnlockStatus, async () => {
@@ -501,7 +517,7 @@ export function LineageWebInstaller() {
 
         const inRecovery = await waitPrompt({
           title: "Xác nhận Lineage Recovery",
-          body: "Phải thấy logo Lineage. Nếu vẫn Fastboot: Volume chọn Recovery, nguồn xác nhận. Nếu không có logo Lineage — dừng, flash lại bước 4.",
+          body: "Phải thấy logo Lineage. Nếu vẫn Fastboot: Volume chọn Recovery, nguồn xác nhận. Nếu không có logo Lineage — dừng, flash lại bước 5.",
           confirmLabel: "Đã thấy logo Lineage",
           cancelLabel: "Hủy",
         });
@@ -615,15 +631,16 @@ export function LineageWebInstaller() {
 
       <StepCard step={1} title="Điều kiện trước khi flash">
         <p>
-          Giống GrapheneOS web installer: máy ở{" "}
-          <strong className="text-foreground">Fastboot Mode</strong> (tam giác đỏ),
-          OEM unlocking đã bật, firmware stock{" "}
+          Giống GrapheneOS web installer: OEM unlocking đã bật, firmware stock{" "}
           <strong className="text-foreground">Android 16 mới nhất</strong>, đúng{" "}
           {LINEAGE_DEVICE_NAME} (<code className="text-foreground">{LINEAGE_DEVICE}</code>
-          ). Wiki Lineage không khóa bootloader sau khi cài.
+          ). Bước 2 dùng ADB để vào Fastboot. Wiki Lineage không khóa bootloader sau khi cài.
         </p>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Cáp data, cổng USB thẳng; Linux nên có gói udev Android.</li>
+          <li>
+            USB debugging bật (và xác nhận “Allow USB debugging” lần đầu). Cáp
+            data, cổng USB thẳng; Linux nên có gói udev Android.
+          </li>
           <li>
             Mirror LineageOS không cho trình duyệt tải trực tiếp (CORS) — khác
             releases.grapheneos.org — nên bước tải mở link official, rồi nạp file
@@ -636,7 +653,46 @@ export function LineageWebInstaller() {
         </ul>
       </StepCard>
 
-      <StepCard step={2} title="Unlock bootloader">
+      <StepCard step={2} title="Vào Fastboot bằng ADB">
+        <p>
+          Máy đang ở hệ thống (hoặc recovery có ADB). Wiki:{" "}
+          <code className="text-foreground">adb -d reboot bootloader</code>. Đã ở
+          Fastboot Mode thì bỏ qua bước này.
+        </p>
+        <CommandPlan
+          items={[
+            {
+              who: "you",
+              command: "USB debugging + Allow USB debugging",
+              detail:
+                "Tùy chọn nhà phát triển → gỡ lỗi USB. Lần đầu ADB: cho phép RSA trên máy. Tắt `adb kill-server` nếu adb CLI đang chiếm USB.",
+            },
+            {
+              who: "auto",
+              command: "adb -d reboot bootloader",
+              detail:
+                "WebUSB ADB gửi lệnh reboot vào Fastboot. Installer mở hộp chọn thiết bị khi bạn bấm nút.",
+            },
+            {
+              who: "you",
+              command: "Fastboot Mode (tam giác đỏ)",
+              detail:
+                "Đợi máy vào Fastboot. Đừng bấm Start. Rồi sang bước Unlock (WebUSB fastboot, khác ADB).",
+            },
+          ]}
+        />
+        <CommandBlock commands={["adb -d reboot bootloader"]} />
+        <Button
+          type="button"
+          disabled={!usbOk || busy}
+          onClick={() => void handleRebootBootloader().catch(() => undefined)}
+        >
+          adb reboot bootloader
+        </Button>
+        <StatusBlock id="bootloader" status={bootloaderStatus} />
+      </StepCard>
+
+      <StepCard step={3} title="Unlock bootloader">
         <p>
           Nếu đã unlock sẵn, bước này báo “đã unlock”. Lệnh wipe dữ liệu — xác nhận
           trên máy.
@@ -673,7 +729,7 @@ export function LineageWebInstaller() {
         <StatusBlock id="unlock" status={unlockStatus} />
       </StepCard>
 
-      <StepCard step={3} title="Lấy bản LineageOS (nightly official)">
+      <StepCard step={4} title="Lấy bản LineageOS (nightly official)">
         {releaseError && (
           <p className="text-red-400">Không đọc API: {releaseError}</p>
         )}
@@ -745,7 +801,7 @@ export function LineageWebInstaller() {
         </p>
       </StepCard>
 
-      <StepCard step={4} title="Flash recovery images (WebUSB)">
+      <StepCard step={5} title="Flash recovery images (WebUSB)">
         <p>
           Tương đương phần fastboot trên wiki / GrapheneOS “Flash release”, nhưng
           chỉ flash{" "}
@@ -753,7 +809,7 @@ export function LineageWebInstaller() {
           <code className="text-foreground">dtbo</code>,{" "}
           <code className="text-foreground">vendor_kernel_boot</code>,{" "}
           <code className="text-foreground">vendor_boot</code>. Zip ROM Lineage
-          không phải factory image — phải sideload qua recovery (bước 5).
+          không phải factory image — phải sideload qua recovery (bước 6).
         </p>
         <CommandPlan
           items={[
@@ -781,7 +837,7 @@ export function LineageWebInstaller() {
             {
               who: "auto",
               command: "fastboot flash vendor_boot vendor_boot.img",
-              detail: "Lineage Recovery. Sau đó sang bước 5 — chưa sideload zip.",
+              detail: "Lineage Recovery. Sau đó sang bước 6 — chưa sideload zip.",
             },
           ]}
         />
@@ -809,7 +865,7 @@ export function LineageWebInstaller() {
         />
       </StepCard>
 
-      <StepCard step={5} title="Format data + sideload ROM">
+      <StepCard step={6} title="Format data + sideload ROM">
         <p>
           Recovery không cho format/sideload từ fastboot — installer reboot recovery,
           rồi <strong className="text-foreground">dừng chờ bạn</strong> làm đúng bước
@@ -822,13 +878,13 @@ export function LineageWebInstaller() {
               who: "auto",
               command: "fastboot reboot recovery",
               detail:
-                "Nếu máy còn ở Fastboot sau bước 4. Không được thì chọn Recovery bằng volume + nguồn.",
+                "Nếu máy còn ở Fastboot sau bước 5. Không được thì chọn Recovery bằng volume + nguồn.",
             },
             {
               who: "you",
               command: "Logo Lineage Recovery",
               detail:
-                "Installer dừng, chờ bạn xác nhận đã thấy logo. Không có logo = flash lại bước 4.",
+                "Installer dừng, chờ bạn xác nhận đã thấy logo. Không có logo = flash lại bước 5.",
             },
             {
               who: "you",
