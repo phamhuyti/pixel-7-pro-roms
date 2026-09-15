@@ -26,6 +26,7 @@ export const sources = {
   googleUsbDriver: "https://developer.android.com/studio/run/win-usb",
   lineageGapps: "https://wiki.lineageos.org/gapps/",
   lineageFirmware: "https://wiki.lineageos.org/devices/cheetah/fw_update/",
+  lineageAutoFlash: "/tools/lineageos-cheetah-flash.sh",
   grapheneWeb: "https://grapheneos.org/install/web",
   grapheneCli: "https://grapheneos.org/install/cli",
   calyxWindows: "https://calyxos.org/install/devices/cheetah/windows/",
@@ -41,4 +42,7 @@ export const sources = {
   magiskReleases: "https://github.com/topjohnwu/Magisk/releases",
   kernelsuInstall: "https://kernelsu.org/guide/installation.html",
   kernelsuReleases: "https://github.com/tiann/KernelSU/releases",
+  vpnHotspotReleases: "https://github.com/Mygod/VPNHotspot/releases",
+  vpnHotspotRepo: "https://github.com/Mygod/VPNHotspot",
+  termuxFDroid: "https://f-droid.org/packages/com.termux/",
 } as const;
