@@ -23,6 +23,7 @@ process.env.NEXT_PUBLIC_BUILD_TIME = BUILD_TIME;
 const nextConfig: NextConfig = {
   agentRules: false,
   output: "standalone",
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
   generateBuildId: async () =>
     `${BUILD_SHA}-${BUILD_TIME.replace(/[:.]/g, "")}`,
   transpilePackages: [
