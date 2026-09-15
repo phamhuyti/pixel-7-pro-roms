@@ -1,0 +1,36 @@
+export const LINEAGE_DEVICE = "cheetah" as const;
+export const LINEAGE_DEVICE_NAME = "Pixel 7 Pro";
+
+export const LINEAGE_BUILDS_API =
+  `https://download.lineageos.org/api/v2/devices/${LINEAGE_DEVICE}/builds` as const;
+
+/** Partition images required by the LineageOS cheetah wiki before recovery. */
+export const FLASH_IMAGE_NAMES = [
+  "boot.img",
+  "dtbo.img",
+  "vendor_kernel_boot.img",
+  "vendor_boot.img",
+] as const;
+
+export type FlashImageName = (typeof FLASH_IMAGE_NAMES)[number];
+
+export type LineageBuildFile = {
+  filename: string;
+  url: string;
+  sha256: string;
+  size: number;
+};
+
+export type LineageBuild = {
+  date: string;
+  version: string;
+  type: string;
+  files: LineageBuildFile[];
+};
+
+export type ResolvedRelease = {
+  date: string;
+  version: string;
+  rom: LineageBuildFile;
+  images: Record<FlashImageName, LineageBuildFile>;
+};

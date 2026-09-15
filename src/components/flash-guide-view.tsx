@@ -37,6 +37,11 @@ export function FlashGuideView({
               Mở khóa bootloader
             </Button>
           )}
+          {rom.slug === "lineageos" && catalog.id === "pixel-7-pro" && (
+            <Button render={<Link href={paths.lineageWeb} />}>
+              Web installer
+            </Button>
+          )}
           <Button variant="ghost" render={<Link href={paths.rom(rom.slug)} />}>
             Chi tiết ROM
           </Button>

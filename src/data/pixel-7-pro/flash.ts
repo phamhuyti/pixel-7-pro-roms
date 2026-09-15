@@ -236,41 +236,48 @@ export const flashGuides: Record<string, FlashGuide> = {
   },
 
   lineageos: {
-    method: "recovery-sideload",
-    officialHref: sources.lineageInstall,
-    officialLabel: "Wiki cài LineageOS cheetah",
+    method: "web-installer",
+    officialHref: sources.lineageWebInstall,
+    officialLabel: "Web installer LineageOS",
     extraLinks: [
+      { label: "Wiki cài LineageOS cheetah", href: sources.lineageInstall },
       { label: "Tải nightly + recovery", href: sources.lineageDownloads },
       { label: "Cập nhật firmware", href: sources.lineageFirmware },
       { label: "GApps (MindTheGapps arm64)", href: sources.lineageGapps },
-      { label: "Auto-flash script (repo)", href: sources.lineageAutoFlash },
+      { label: "Auto-flash script (CLI)", href: sources.lineageAutoFlash },
     ],
     summary:
-      "Có script auto-flash (tải nightly official + fastboot/adb theo wiki). Hoặc làm tay: recovery Lineage + sideload. Bắt buộc firmware stock Android 16 mới nhất. Không khóa bootloader.",
+      "Giống GrapheneOS: web installer WebUSB (unlock + flash recovery images). Mirror Lineage không CORS nên nạp file local + SHA256; zip ROM sideload qua recovery. Có thêm script CLI one-shot. Firmware stock Android 16 bắt buộc. Không khóa bootloader.",
     relock: "forbidden",
     firmwareNote:
-      "Wiki: cần stock Android 16, bản vá mới nhất. Đang ở custom ROM khác (kể cả Lineage unofficial) không có nghĩa firmware đã đủ. Không chắc thì flash stock trước. Script không flash stock giúp bạn.",
+      "Wiki: cần stock Android 16, bản vá mới nhất. Đang ở custom ROM khác (kể cả Lineage unofficial) không có nghĩa firmware đã đủ. Không chắc thì flash stock trước. Web installer / script không flash stock giúp bạn.",
     requirements: [
-      "Bootloader đã unlock (xem trang Mở khóa bootloader).",
-      "USB debugging bật lại sau unlock (máy bị wipe).",
+      "Bootloader sẽ unlock trên web installer (hoặc đã unlock — xem trang Mở khóa bootloader).",
+      "Chrome / Edge / Brave / Vanadium — WebUSB; không Firefox, không Incognito.",
       "Đã boot stock ít nhất một lần; kiểm tra gọi/SMS/LTE nếu bạn cần chúng trên Lineage.",
-      "platform-tools (adb, fastboot), python3, curl|wget — cho script auto-flash.",
-      "Hoặc tải tay từ download.lineageos.org/devices/cheetah: boot.img, dtbo.img, vendor_kernel_boot.img, vendor_boot.img, zip ROM.",
+      "Web: tải 5 file cùng nightly từ download.lineageos.org rồi nạp vào installer (đối chiếu SHA256).",
+      "CLI (tuỳ chọn): platform-tools + python3 + curl|wget cho script auto-flash.",
     ],
     warnings: [
       sharedWipe,
       noRelockFeature,
-      "Script chỉ chấp nhận product=cheetah và bootloader unlocked — đừng sửa để ép máy khác.",
+      "Installer / script chỉ chấp nhận product=cheetah và bootloader unlocked — đừng ép máy khác.",
       "Flash recovery lạ thay vendor_boot Lineage thường làm sideload hỏng.",
       "GApps (nếu dùng) phải sideload trước lần boot hệ thống đầu tiên.",
       rootPointer,
     ],
     downloads: [
       {
+        label: "Web installer (WebUSB)",
+        href: sources.lineageWebInstall,
+        detail:
+          "Kiểu grapheneos.org/install/web: Unlock → nạp nightly + SHA256 → Flash boot/dtbo/vendor_kernel_boot/vendor_boot. Format data + sideload zip vẫn trên recovery / adb.",
+      },
+      {
         label: "Auto-flash script (cheetah)",
         href: "/tools/lineageos-cheetah-flash.sh",
         detail:
-          "Tải nightly từ API official, đối chiếu SHA256, flash boot/dtbo/vendor_kernel_boot/vendor_boot, sideload zip. Format data / Apply from ADB vẫn chọn tay trên recovery.",
+          "Tải nightly từ API official, đối chiếu SHA256, flash image, sideload zip. Format data / Apply from ADB chọn tay trên recovery.",
       },
       {
         label: "Wiki cài đặt",
@@ -286,11 +293,16 @@ export const flashGuides: Record<string, FlashGuide> = {
     steps: [
       {
         title: "Đúng firmware stock Android 16",
-        body: "Nếu không chắc, flash stock bằng Android Flash Tool rồi mới tiếp. Wiki không hướng dẫn up/downgrade tại chỗ. Script auto-flash giả định firmware đã đúng.",
+        body: "Nếu không chắc, flash stock bằng Android Flash Tool rồi mới tiếp. Wiki không hướng dẫn up/downgrade tại chỗ. Web installer / script giả định firmware đã đúng.",
       },
       {
-        title: "Cách nhanh: chạy auto-flash script",
-        body: "Trên Linux / macOS / WSL: tải script ở mục “Tải official” phía trên (hoặc file tools/ trong repo), chmod +x, cắm máy đã unlock. Script tải nightly cheetah mới nhất (hoặc dùng --skip-download / --rom), kiểm tra product=cheetah, flash image, rồi nhắc bạn Format data và Apply from ADB trên recovery.",
+        title: "Cách khuyến nghị: Web installer (như GrapheneOS)",
+        body: "Mở trang Web installer LineageOS trên catalog này. Chrome/Edge + máy ở Fastboot. Unlock (nếu cần) → mở link tải 5 file nightly → Nạp file đã tải (SHA256) → Flash recovery images. Sau đó Format data + adb sideload zip trên recovery — installer hướng dẫn từng bước.",
+        note: "Khác GrapheneOS: không flash hết OS trong một factory zip, và không khóa bootloader.",
+      },
+      {
+        title: "Hoặc auto-flash script (CLI)",
+        body: "Linux / macOS / WSL: tải script, chmod +x, cắm máy đã unlock. Script tải nightly, kiểm tra product=cheetah, flash image, nhắc Format data / Apply from ADB, rồi sideload.",
         commands: [
           "chmod +x lineageos-cheetah-flash.sh",
           "./lineageos-cheetah-flash.sh",
