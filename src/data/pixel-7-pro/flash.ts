@@ -247,7 +247,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       { label: "Auto-flash script (CLI)", href: sources.lineageAutoFlash },
     ],
     summary:
-      "Giống GrapheneOS: web installer WebUSB (unlock + flash recovery images). Mirror Lineage không CORS nên nạp file local + SHA256; zip ROM sideload qua recovery. Có thêm script CLI one-shot. Firmware stock Android 16 bắt buộc. Không khóa bootloader.",
+      "Giống GrapheneOS: web installer WebUSB (unlock + flash recovery images). Mirror Lineage không CORS — installer proxy tải vào cache IndexedDB + SHA256; zip ROM sideload qua recovery. Có thêm script CLI one-shot. Firmware stock Android 16 bắt buộc. Không khóa bootloader.",
     relock: "forbidden",
     firmwareNote:
       "Wiki: cần stock Android 16, bản vá mới nhất. Đang ở custom ROM khác (kể cả Lineage unofficial) không có nghĩa firmware đã đủ. Không chắc thì flash stock trước. Web installer / script không flash stock giúp bạn.",
@@ -255,7 +255,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       "Bootloader sẽ unlock trên web installer (hoặc đã unlock — xem trang Mở khóa bootloader).",
       "Chrome / Edge / Brave / Vanadium — WebUSB; không Firefox, không Incognito.",
       "Đã boot stock ít nhất một lần; kiểm tra gọi/SMS/LTE nếu bạn cần chúng trên Lineage.",
-      "Web: tải 5 file cùng nightly từ download.lineageos.org rồi nạp vào installer (đối chiếu SHA256).",
+      "Web: bấm Tải vào cache (proxy same-origin) hoặc tải 5 file cùng nightly rồi nạp (đối chiếu SHA256).",
       "CLI (tuỳ chọn): platform-tools + python3 + curl|wget cho script auto-flash.",
     ],
     warnings: [
@@ -271,7 +271,7 @@ export const flashGuides: Record<string, FlashGuide> = {
         label: "Web installer (WebUSB)",
         href: sources.lineageWebInstall,
         detail:
-          "Kiểu grapheneos.org/install/web: Unlock → nạp nightly + SHA256 → Flash boot/dtbo/vendor_kernel_boot/vendor_boot → Auto sideload (chờ Format data / Apply from ADB trên recovery).",
+          "Kiểu grapheneos.org/install/web: Unlock → Tải vào cache (proxy) + SHA256 → Flash boot/dtbo/vendor_kernel_boot/vendor_boot → Auto sideload (chờ Format data / Apply from ADB trên recovery).",
       },
       {
         label: "Auto-flash script (cheetah)",
@@ -297,7 +297,7 @@ export const flashGuides: Record<string, FlashGuide> = {
       },
       {
         title: "Cách khuyến nghị: Web installer (như GrapheneOS)",
-        body: "Mở trang Web installer LineageOS trên catalog này. Chrome/Edge: USB debugging → adb reboot bootloader → Unlock (nếu cần) → nạp nightly + SHA256 → Flash recovery images → Auto sideload (chờ Format data / Apply from ADB, rồi gửi zip qua WebUSB ADB).",
+        body: "Mở trang Web installer LineageOS trên catalog này. Chrome/Edge: USB debugging → adb reboot bootloader → Unlock (nếu cần) → Tải vào cache (hoặc nạp file) + SHA256 → Flash recovery images → Auto sideload (chờ Format data / Apply from ADB, rồi gửi zip qua WebUSB ADB).",
         note: "Khác GrapheneOS: không flash hết OS trong một factory zip, và không khóa bootloader.",
       },
       {

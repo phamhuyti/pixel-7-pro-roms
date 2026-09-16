@@ -3,6 +3,7 @@
 import { CommandBlock } from "@/components/command-block";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
+  downloadReleaseFileViaProxy,
   fetchLatestCheetahReleaseWithFallback,
   requiredFilesOf,
   verifyBlobSha256,
@@ -34,6 +35,7 @@ import {
   LINEAGE_DEVICE_NAME,
   LINEAGE_DOWNLOADS_PAGE,
   type FlashImageName,
+  type LineageBuildFile,
   type ResolvedRelease,
 } from "@/lib/lineage-web-install/types";
 import { cn } from "cn";
@@ -227,6 +229,7 @@ export function LineageWebInstaller() {
     ((value: false | { adb?: Adb }) => void) | null
   >(null);
   const restoreFastboot = useRef<(() => void) | null>(null);
+  const downloadAbort = useRef<AbortController | null>(null);
 
   useEffect(() => {
     setUsbOk(webUsbAvailable());
@@ -266,6 +269,12 @@ export function LineageWebInstaller() {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [busy]);
 
+  useEffect(() => {
+    return () => {
+      downloadAbort.current?.abort();
+    };
+  }, []);
+
   const refreshCached = async (rel: ResolvedRelease) => {
     const map: Record<string, boolean> = {};
     for (const f of requiredFilesOf(rel)) {
@@ -289,7 +298,11 @@ export function LineageWebInstaller() {
       });
     } catch (error) {
       let message: string;
-      if (error instanceof DOMException && error.name === "QuotaExceededError") {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        message = "Đã hủy tải.";
+      } else if (error instanceof Error && error.name === "AbortError") {
+        message = "Đã hủy tải.";
+      } else if (error instanceof DOMException && error.name === "QuotaExceededError") {
         message =
           "Hết dung lượng lưu trình duyệt (IndexedDB). Thoát Incognito hoặc giải phóng ổ đĩa.";
       } else if (error instanceof Error && error.message) {
@@ -335,6 +348,86 @@ export function LineageWebInstaller() {
       kind: "ok",
     });
   };
+
+  const persistVerifiedBlob = async (
+    meta: LineageBuildFile,
+    blob: Blob,
+  ): Promise<boolean> => {
+    assertBlobSize(blob, meta.size, meta.filename);
+    setLoadStatus({
+      text: `Đối chiếu SHA256 ${meta.filename}…`,
+      kind: "busy",
+    });
+    await verifyBlobSha256(
+      blob,
+      meta.sha256,
+      meta.filename,
+      (hashed, total) => {
+        setLoadStatus({
+          text: `Đối chiếu SHA256 ${meta.filename}… ${formatBytes(hashed)} / ${formatBytes(total)}`,
+          kind: "busy",
+          progress: total ? hashed / total : 1,
+        });
+      },
+    );
+    return store.saveFile(meta.filename, blob);
+  };
+
+  const handleDownloadToCache = () =>
+    runSafe(setLoadStatus, async () => {
+      if (!release) throw new Error("Chưa lấy được metadata build.");
+      downloadAbort.current?.abort();
+      const ac = new AbortController();
+      downloadAbort.current = ac;
+
+      await store.init();
+      const needed = requiredFilesOf(release);
+      const missing: LineageBuildFile[] = [];
+      for (const f of needed) {
+        if (!(await store.hasFile(f.filename))) missing.push(f);
+      }
+      if (missing.length === 0) {
+        await refreshCached(release);
+        return `Đủ 5 file trong cache cho LineageOS ${release.version} (${release.date}).`;
+      }
+
+      let memoryOnly = false;
+      let done = 0;
+      for (const meta of missing) {
+        setLoadStatus({
+          text: `Đang tải ${meta.filename} qua proxy… (${done + 1}/${missing.length})`,
+          kind: "busy",
+          progress: done / missing.length,
+        });
+        const blob = await downloadReleaseFileViaProxy(
+          meta,
+          (received, total) => {
+            const fileFrac = total ? Math.min(1, received / total) : 0;
+            setLoadStatus({
+              text:
+                `Đang tải ${meta.filename}… ${formatBytes(received)}` +
+                (total ? ` / ${formatBytes(total)}` : "") +
+                ` (${done + 1}/${missing.length})`,
+              kind: "busy",
+              progress: (done + fileFrac * 0.85) / missing.length,
+            });
+          },
+          ac.signal,
+        );
+        const persisted = await persistVerifiedBlob(meta, blob);
+        if (!persisted) memoryOnly = true;
+        done += 1;
+        await refreshCached(release);
+      }
+
+      const persistNote = memoryOnly
+        ? " Cache IndexedDB đầy — file chỉ giữ trong tab này, đừng reload."
+        : "";
+      return (
+        `Đã tải và xác minh SHA256 đủ file thiếu cho LineageOS ${release.version} (${release.date}).` +
+        persistNote
+      );
+    });
 
   const ingestFiles = async (files: File[]) => {
     if (!release) throw new Error("Chưa lấy được metadata build.");
@@ -701,9 +794,10 @@ export function LineageWebInstaller() {
             data, cổng USB thẳng; Linux nên có gói udev Android.
           </li>
           <li>
-            Mirror LineageOS không cho trình duyệt tải trực tiếp (CORS) — khác
-            releases.grapheneos.org — nên bước tải mở link official, rồi nạp file
-            local và đối chiếu SHA256 trong máy bạn.
+            Mirror LineageOS không CORS (khác releases.grapheneos.org) — trang này
+            proxy same-origin để <strong className="text-foreground">tự tải vào cache</strong>{" "}
+            (IndexedDB) rồi đối chiếu SHA256. Vẫn có thể tải tay rồi nạp file nếu
+            proxy lỗi.
           </li>
           <li>
             Script CLI vẫn tự tải + flash + sideload nếu bạn muốn one-shot trên
@@ -800,9 +894,10 @@ export function LineageWebInstaller() {
               <strong className="text-foreground">
                 LineageOS {release.version}
               </strong>{" "}
-              ({release.date}) — ~{formatBytes(release.rom.size)}. Mirror không
-              CORS nên tải file local rồi nạp vào đây (đối chiếu SHA256). Có thể
-              nạp từng file hoặc cả 5 file; tên{" "}
+              ({release.date}) — ~{formatBytes(release.rom.size)}. Bấm{" "}
+              <strong className="text-foreground">Tải vào cache</strong> để web
+              tự down qua proxy (bypass CORS), lưu IndexedDB và đối chiếu SHA256.
+              Hoặc tải tay rồi kéo thả / nạp file; tên{" "}
               <code className="text-foreground">boot (1).img</code> vẫn nhận.
             </p>
             <ul className="space-y-1 font-mono text-xs text-foreground/90">
@@ -835,6 +930,14 @@ export function LineageWebInstaller() {
           <Button
             type="button"
             disabled={!release || busy}
+            onClick={() => void handleDownloadToCache().catch(() => undefined)}
+          >
+            Tải vào cache
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!release || busy}
             onClick={handleOpenDownloads}
           >
             Mở trang tải official
@@ -854,7 +957,7 @@ export function LineageWebInstaller() {
           }
         >
           <p className="text-xs">
-            Kéo thả 5 file đã tải vào đây, hoặc chọn từ ổ đĩa. Zip ROM ~1.4 GiB —
+            Dự phòng: kéo thả 5 file đã tải, hoặc chọn từ ổ đĩa. Zip ROM ~1.4 GiB —
             SHA256 chạy theo luồng, đợi thanh tiến trình.
           </p>
           <label
